@@ -405,3 +405,43 @@ svg.vchart{width:100%;height:auto;display:block}
 .ends.rel span:first-child{position:absolute;left:0}
 .ends.rel span:last-child{position:absolute;right:0}
 .ends.rel .fivelab{position:absolute;left:calc(8px + (100% - 16px) * 0.25);transform:translateX(-50%);color:var(--warn)}
+
+/* electorate map */
+.viewseg{margin:2px 0 12px}
+.viewseg button{padding:6px 18px}
+#seatSection.mapmode #seatListCtl label{display:none}
+.mapbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between;margin-bottom:8px}
+.mapbar select{min-width:0;max-width:100%}
+.mapregions{margin-bottom:10px}
+.mapgrid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.mapgrid{grid-template-columns:1fr}}
+.mapwrap{position:relative;height:clamp(360px,64vh,660px);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+svg.seatmap{width:100%;height:100%;display:block;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+svg.seatmap.dragging{cursor:grabbing}
+.seatmap path.el{stroke:var(--surface);stroke-width:1;vector-effect:non-scaling-stroke;stroke-linejoin:round;cursor:pointer;transition:fill-opacity .25s}
+.seatmap path.el:hover,.seatmap path.el:focus-visible{stroke:var(--ink);stroke-width:1.6;outline:none}
+.seatmap path.el.sel{stroke:var(--ink);stroke-width:2.6}
+.seatmap .land{fill:var(--surface)}
+.seatmap .maplab{font-weight:600;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-linejoin:round;pointer-events:none;text-anchor:middle}
+.seatmap .maplab tspan.sub{font-weight:500;fill:var(--muted)}
+@media (prefers-reduced-motion: reduce){.seatmap path.el{transition:none}}
+.mapctl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.mapctl button{width:36px;height:36px;border:0;background:transparent;font-size:1.15rem;line-height:1;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.mapctl button + button{border-top:1px solid var(--line)}
+.mapctl button:hover{background:var(--chamber-soft)}
+.maphint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:.8rem;padding:6px 12px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.maphint[hidden]{display:none}
+#mapTip{white-space:normal;max-width:240px;text-align:left}
+.mapside{min-width:0}
+.mapside .seat{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface)}
+.mapside .seathead .name{font-size:1.1rem}
+.mapside .empty{border:1px dashed var(--line);border-radius:12px;padding:14px;color:var(--muted);font-size:.9rem}
+.mapside .empty b{color:var(--ink)}
+.mapside .tally{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px}
+.mapside .tally li{display:flex;align-items:center;gap:8px;color:var(--ink)}
+.mapside .tally li span.n{margin-left:auto;font-weight:600}
+.mapside .back{margin-top:8px}
+.maplegend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:.82rem;color:var(--muted);margin-top:10px}
+.maplegend .lg{display:inline-flex;align-items:center;gap:6px}
+.maplegend .lg i{width:22px;height:13px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
+.maplegend .lead{flex-basis:100%;color:var(--ink)}

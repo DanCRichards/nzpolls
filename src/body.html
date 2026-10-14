@@ -190,7 +190,7 @@
   </section>
 
   <!-- 3. Electorates -->
-  <section class="panel block" aria-labelledby="h-seats">
+  <section class="panel block" id="seatSection" aria-labelledby="h-seats">
     <h2 id="h-seats">Electorate seats</h2>
     <div class="seatmode">
       <label class="switch"><input type="checkbox" id="simSeats" checked><span class="track" aria-hidden="true"></span> Simulate electorate results</label>
@@ -198,7 +198,10 @@
     </div>
     <p class="hint">Chances are my estimates from each seat's 2023 result (or its predecessor's), the national swing since, candidates, retirements and the five electorate polls published. They shift with the party vote you set. Tap a candidate to call the seat for them; tap again to hand it back to the model. Called seats are fixed in every simulation.</p>
     <div class="presets" id="presets"></div>
-    <div class="controls searchrow">
+    <div class="seg viewseg" role="group" aria-label="Show electorates as" id="seatView">
+      <button data-v="list" aria-pressed="true">List</button><button data-v="map" aria-pressed="false">Map</button>
+    </div>
+    <div class="controls searchrow" id="seatListCtl">
       <label class="inline">Find <input type="search" id="seatSearch" placeholder="Electorate or candidate"></label>
       <label class="inline">Show
         <select id="seatFilter">
@@ -213,8 +216,32 @@
       </label>
       <button class="btn" id="clearLocks">Clear all calls</button>
     </div>
-    <p class="thr" id="seatSummary" style="margin-bottom:8px"></p>
-    <div id="seatList"></div>
+    <div id="seatMapView" hidden>
+      <div class="mapbar">
+        <div class="seg" role="group" aria-label="Which electorates to show" id="mapSet">
+          <button data-m="general" aria-pressed="true">General electorates</button><button data-m="maori" aria-pressed="false">Māori electorates</button>
+        </div>
+        <label class="inline">Go to <select id="mapGo"></select></label>
+      </div>
+      <div class="presets mapregions" id="mapRegions"></div>
+      <div class="mapgrid">
+        <div class="mapwrap" id="mapWrap">
+          <svg id="seatMap" class="seatmap" role="group" aria-label="Map of electorates. Select one to see its candidates."></svg>
+          <div class="mapctl">
+            <button id="mapIn" aria-label="Zoom in" data-tip="Zoom in">+</button><button id="mapOut" aria-label="Zoom out" data-tip="Zoom out">−</button><button id="mapAll" aria-label="Show all of New Zealand" data-tip="Show all of New Zealand"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+          </div>
+          <div class="maphint" id="mapHint" hidden></div>
+          <div class="tip" id="mapTip" hidden></div>
+        </div>
+        <div class="mapside" id="mapSide" aria-live="polite"></div>
+      </div>
+      <div class="maplegend" id="mapLegend"></div>
+      <p class="note" id="mapNote"></p>
+    </div>
+    <div id="seatListView">
+      <p class="thr" id="seatSummary" style="margin-bottom:8px"></p>
+      <div id="seatList"></div>
+    </div>
   </section>
 
   <!-- 4. Lists -->

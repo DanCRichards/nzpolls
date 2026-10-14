@@ -6,6 +6,7 @@ A single-page seat forecast for New Zealand's 7 November 2026 general election. 
 
 ```bash
 python3 data/data.py   # only after editing seats, candidates or party lists in data.py
+python3 data/map.py    # only after replacing files in data/boundaries/ (needs pip install shapely pyproj)
 python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
 ```
@@ -23,6 +24,9 @@ open dist/index.html   # no server needed; the page is fully self-contained
 | `src/main.js` | Everything else: state, seat model, simulation, rendering, controls |
 | `data/data.py` | Source of truth for the 71 electorates (candidates, starting weights, notes) and every party list. Writes `data/data.json` |
 | `data/data.json` | Generated. Embedded in the page as `const DATA` |
+| `data/map.py` | Clips the 2026 electorate boundaries to the coastline, simplifies them and writes `data/map.json` |
+| `data/map.json` | Generated. Embedded in the page as `const MAP`: SVG paths, label points and bounding boxes per electorate |
+| `data/boundaries/` | Map sources: Stats NZ 2026 electorate boundaries (CC BY 4.0) and a LINZ coastline (CC BY 3.0 NZ) |
 | `data/NZ_2026_Poll_Seat_Tracker.xlsx` | Companion spreadsheet: Sainte-Laguë seat calculator and poll log |
 | `dist/index.html` | Built output |
 
@@ -49,7 +53,7 @@ The random seed is fixed, so identical inputs give identical results. That's del
 
 1. **Most likely Parliament:** seat diagram with a majority outline, odds cards, party bar with hover MP lists, and a collapsible detail table.
 2. **Simulation:** intro and reset, then cards for Opportunity (side, vote with direct and squeeze modes, impact), National's overhang (bars, list table under More info), polling error, Te Pāti Māori, breakaway MPs and late swing.
-3. **Electorate seats:** cards with simulated chances, rating pills and calls.
+3. **Electorate seats:** a List / Map switch. The list shows cards with simulated chances, rating pills and calls. The map (general or Māori electorates) colours each seat by who's ahead, with the shade set by the same rating as the pills and stripes for toss-ups; selecting a seat shows its card. Map state lives in `MAPV` (`main.js`), and `paintMap()` runs after every simulation.
 4. **Party list outcome.**
 5. **More tools:** the all-party chart of what extra votes would do.
 6. **Traditional government blocs:** which bloc each other party sits in.

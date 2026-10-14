@@ -636,6 +636,155 @@ function drawSeatList(){
   bindCards(el);
 }
 
+/* ---------- 3b. Electorate map ---------- */
+const MAPV={view:"list", set:"general", sel:null, vb:null, built:null};
+const SHADE={Called:1, Safe:0.9, Likely:0.66, Leans:0.42};
+const MAP_MINW=70; // narrowest view, in map units (about 3.5 km)
+let mapAnim=0, mapHintTimer=null;
+const plab=c=>c.p==="OTH"||c.p==="MIN"?c.pl:NAMES[c.p];
+const surname=nm=>nm.split(" ").slice(-1)[0];
+function seatOdds(i){
+  const s=ESEATS[i], sim=state.sim, lock=state.locks[i], useSim=sim&&!sim.off&&state.simSeats;
+  const p= lock!=null ? s.c.map((c,j)=>j===lock?1:0) : useSim ? Array.from(sim.seatWin[i]).map(v=>v/sim.N) : seatProbs(s,eff());
+  const ord=s.c.map((c,j)=>j).filter(j=>s.c[j].w>0||p[j]>0).sort((a,b)=>p[b]-p[a]);
+  return {p, ord, rt: lock!=null?"Called":rating(p)[0], lock, useSim};
+}
+function mapSize(){ const r=document.getElementById("mapWrap").getBoundingClientRect(); return {W:Math.max(1,r.width),H:Math.max(1,r.height)}; }
+function fitBox(b,pad){ const {W,H}=mapSize(), bw=b[2]-b[0], bh=b[3]-b[1], w=Math.max(MAP_MINW,Math.max(bw,bh*W/H)*(1+2*pad)), h=w*H/W;
+  return {x:(b[0]+b[2])/2-w/2, y:(b[1]+b[3])/2-h/2, w, h}; }
+const fullView=()=>fitBox(MAP.box,0.03);
+function clampV(v){
+  const {W,H}=mapSize(), B=MAP.box, w=Math.min(Math.max(v.w,MAP_MINW),fullView().w*1.6), h=w*H/W;
+  const cx=Math.min(B[2],Math.max(B[0],v.x+v.w/2)), cy=Math.min(B[3],Math.max(B[1],v.y+v.h/2));
+  return {x:cx-w/2, y:cy-h/2, w, h};
+}
+function setView(t, animate){
+  cancelAnimationFrame(mapAnim);
+  const to=clampV(t), from=MAPV.vb;
+  if(!animate || !from || matchMedia("(prefers-reduced-motion: reduce)").matches){ MAPV.vb=to; applyView(); return; }
+  const t0=performance.now(), D=450, fc=[from.x+from.w/2,from.y+from.h/2], tc=[to.x+to.w/2,to.y+to.h/2];
+  const step=now=>{ const u=Math.min(1,(now-t0)/D), e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;
+    const w=from.w*Math.pow(to.w/from.w,e), h=w*to.h/to.w, cx=fc[0]+(tc[0]-fc[0])*e, cy=fc[1]+(tc[1]-fc[1])*e;
+    MAPV.vb={x:cx-w/2, y:cy-h/2, w, h}; applyView(); if(u<1) mapAnim=requestAnimationFrame(step); };
+  mapAnim=requestAnimationFrame(step);
+}
+function zoomBy(k){ const v=MAPV.vb, cx=v.x+v.w/2, cy=v.y+v.h/2; setView({x:cx-v.w*k/2, y:cy-v.h*k/2, w:v.w*k, h:v.h*k}, true); }
+function applyView(){
+  const v=MAPV.vb, svg=document.getElementById("seatMap"); if(!v||MAPV.built==null) return;
+  svg.setAttribute("viewBox",`${v.x} ${v.y} ${v.w} ${v.h}`);
+  const sc=mapSize().W/v.w, S=8/sc;
+  svg.querySelectorAll("pattern").forEach(p=>{ p.setAttribute("width",S); p.setAttribute("height",S);
+    const [a,b]=p.children; a.setAttribute("width",S); a.setAttribute("height",S); b.setAttribute("width",S/2); b.setAttribute("height",S); });
+  MAP[MAPV.built].forEach((e,k)=>{ const t=svg.querySelector(`text[data-k="${k}"]`); if(!t) return;
+    const bw=(e.b[2]-e.b[0])*sc, bh=(e.b[3]-e.b[1])*sc, on=bw>78&&bh>30, two=bh>64;
+    t.setAttribute("visibility",on?"visible":"hidden"); t.setAttribute("font-size",(12/sc).toFixed(3)); t.setAttribute("stroke-width",(3/sc).toFixed(3));
+    if(t.lastChild) t.lastChild.setAttribute("visibility",two?"inherit":"hidden"); });
+}
+function buildMap(){
+  const set=MAP[MAPV.set], svg=document.getElementById("seatMap");
+  svg.innerHTML=`<defs>${set.map((e,k)=>`<pattern id="mp${k}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect/><rect/></pattern>`).join("")}</defs>`
+    +`<g>${set.map((e,k)=>`<path class="el" data-k="${k}" data-i="${SEAT_IDX[e.n]}" d="${e.d}" fill-rule="evenodd" tabindex="0" role="button"></path>`).join("")}</g>`
+    +`<g>${set.map((e,k)=>`<text class="maplab" data-k="${k}" x="${e.l[0]}" y="${e.l[1]}"></text>`).join("")}</g>`;
+  MAPV.built=MAPV.set;
+}
+function paintMap(){
+  if(MAPV.view!=="map") return;
+  if(MAPV.built!==MAPV.set) buildMap();
+  if(!MAPV.vb) MAPV.vb=clampV(fullView());
+  const svg=document.getElementById("seatMap");
+  MAP[MAPV.set].forEach((e,k)=>{
+    const i=SEAT_IDX[e.n], s=ESEATS[i], o=seatOdds(i), a=s.c[o.ord[0]], b=s.c[o.ord[1]]||a, pa=o.p[o.ord[0]];
+    const path=svg.querySelector(`path[data-k="${k}"]`), pat=svg.getElementById("mp"+k);
+    if(o.rt==="Toss-up"){ pat.children[0].setAttribute("fill",color(a.p)); pat.children[1].setAttribute("fill",color(b.p));
+      path.setAttribute("fill",`url(#mp${k})`); path.setAttribute("fill-opacity",0.8); }
+    else { path.setAttribute("fill",color(a.p)); path.setAttribute("fill-opacity",SHADE[o.rt]); }
+    const desc= o.lock!=null ? `called for ${a.nm} (${plab(a)})` : o.rt==="Toss-up" ? `toss-up: ${a.nm} (${plab(a)}) ${fmtP(pa)}, ${b.nm} (${plab(b)}) ${fmtP(o.p[o.ord[1]])}` : `${o.rt.toLowerCase()} ${plab(a)}: ${a.nm} ${fmtP(pa)}`;
+    path.setAttribute("aria-label",`${s.n}, ${desc}`); path.dataset.desc=desc;
+    path.classList.toggle("sel",MAPV.sel===i);
+    svg.querySelector(`text[data-k="${k}"]`).innerHTML=`<tspan x="${e.l[0]}" dy="-0.1em">${esc(s.n)}</tspan><tspan class="sub" x="${e.l[0]}" dy="1.2em">${esc(surname(a.nm))} ${o.lock!=null?"(called)":fmtP(pa)}</tspan>`;
+  });
+  const sel=svg.querySelector("path.el.sel"); if(sel) sel.parentNode.appendChild(sel); // draw the selected outline on top
+  drawMapSide(); applyView();
+}
+function drawMapSide(){
+  const el=document.getElementById("mapSide"), set=MAP[MAPV.set];
+  document.getElementById("mapGo").value= MAPV.sel==null?"":String(MAPV.sel);
+  if(MAPV.sel!=null){
+    el.innerHTML=seatCard(MAPV.sel)+`<div class="presets back"><button class="btn" id="mapBack">Back to all electorates</button></div>`;
+    bindCards(el);
+    document.getElementById("mapBack").onclick=()=>{ MAPV.sel=null; paintMap(); setView(fullView(),true); };
+    return;
+  }
+  const t={}; set.forEach(e=>{ const i=SEAT_IDX[e.n], o=seatOdds(i), c=ESEATS[i].c[o.ord[0]], key=c.p==="MIN"||c.p==="OTH"?c.pl:c.p;
+    (t[key]=t[key]||{c:c.p==="MIN"?"MIN":c.p,label:plab(c),n:0}).n++; });
+  const rows=Object.values(t).sort((a,b)=>b.n-a.n).map(x=>`<li><span class="swatch" style="background:${color(x.c)}"></span>${esc(x.label)}<span class="n">${x.n}</span></li>`).join("");
+  el.innerHTML=`<div class="empty"><p><b>Tap or click an electorate</b> to see its candidates and their chances, and to call the seat. Drag to move around; pinch, or hold Ctrl or ⌘ and scroll, to zoom.</p>
+    <p style="margin-top:10px">Who's ahead in the ${set.length} ${MAPV.set==="general"?"general":"Māori"} electorates:</p><ul class="tally">${rows}</ul></div>`;
+}
+function selectSeat(i, zoom){
+  const set=ESEATS[i].m?"maori":"general";
+  if(set!==MAPV.set){ MAPV.set=set; document.querySelectorAll("#mapSet button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===set)); }
+  MAPV.sel=i; paintMap();
+  if(zoom){ const e=MAP[set].find(x=>x.n===ESEATS[i].n); setView(fitBox(e.b,0.3),true); }
+}
+function mapHint(txt){ const h=document.getElementById("mapHint"); h.textContent=txt; h.hidden=false; clearTimeout(mapHintTimer); mapHintTimer=setTimeout(()=>h.hidden=true,1600); }
+function setSeatView(v){
+  MAPV.view=v;
+  document.querySelectorAll("#seatView button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===v));
+  document.getElementById("seatMapView").hidden= v!=="map"; document.getElementById("seatListView").hidden= v==="map";
+  document.getElementById("seatSection").classList.toggle("mapmode",v==="map");
+  if(v==="map") paintMap();
+}
+function bindMap(){
+  const svg=document.getElementById("seatMap"), wrap=document.getElementById("mapWrap"), tip=document.getElementById("mapTip");
+  document.querySelectorAll("#seatView button").forEach(b=>b.onclick=()=>setSeatView(b.dataset.v));
+  document.querySelectorAll("#mapSet button").forEach(b=>b.onclick=()=>{ if(MAPV.set===b.dataset.m) return; MAPV.set=b.dataset.m; MAPV.sel=null;
+    document.querySelectorAll("#mapSet button").forEach(x=>x.setAttribute("aria-pressed",x===b)); paintMap(); });
+  const go=document.getElementById("mapGo"), opt=m=>ESEATS.map((s,i)=>({s,i})).filter(x=>x.s.m===m).sort((a,b)=>a.s.n.localeCompare(b.s.n)).map(x=>`<option value="${x.i}">${esc(x.s.n)}</option>`).join("");
+  go.innerHTML=`<option value="">Choose an electorate</option><optgroup label="General electorates">${opt(false)}</optgroup><optgroup label="Māori electorates">${opt(true)}</optgroup>`;
+  go.onchange=()=>{ if(go.value!=="") selectSeat(+go.value,true); };
+  const rg=document.getElementById("mapRegions");
+  rg.innerHTML=`<button class="btn" data-r="-1">All of New Zealand</button>`+MAP.regions.map((r,k)=>`<button class="btn" data-r="${k}">${esc(r.n)}</button>`).join("");
+  rg.querySelectorAll("button").forEach(b=>b.onclick=()=>{ const k=+b.dataset.r; setView(k<0?fullView():fitBox(MAP.regions[k].b,0.02),true); });
+  document.getElementById("mapIn").onclick=()=>zoomBy(0.5);
+  document.getElementById("mapOut").onclick=()=>zoomBy(2);
+  document.getElementById("mapAll").onclick=()=>setView(fullView(),true);
+  const lg=[["Called by you",1],["Safe: 85% or more",0.9],["Likely: 70–85%",0.66],["Leans: 57–70%",0.42]];
+  document.getElementById("mapLegend").innerHTML=`<span class="lead">Colour shows who's ahead. The stronger the colour, the surer the result; stripes mean a toss-up between the top two.</span>`
+    +lg.map(([l,o])=>`<span class="lg"><i style="background:var(--ink);opacity:${o}"></i>${l}</span>`).join("")
+    +`<span class="lg"><i style="background:repeating-linear-gradient(45deg,var(--ink) 0 3px,var(--muted) 3px 6px);opacity:.8"></i>Toss-up: under 57%</span>`;
+  document.getElementById("mapNote").textContent=`${MAP.source}. The Chatham Islands, part of Wellington Bays and Te Tai Tonga, aren't shown. Chances are the same as in the list view.`;
+  // drag, pinch and click
+  const ptrs=new Map(); let g0=null, moved=false;
+  const toUser=(x,y,inv)=>new DOMPoint(x,y).matrixTransform(inv);
+  const mid=()=>{ const p=[...ptrs.values()]; return {x:p.reduce((a,q)=>a+q.x,0)/p.length, y:p.reduce((a,q)=>a+q.y,0)/p.length, d:p.length>1?Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y):0}; };
+  const begin=()=>{ const inv=svg.getScreenCTM().inverse(), m=mid(); g0={inv, vb:{...MAPV.vb}, m:toUser(m.x,m.y,inv), d:m.d}; };
+  svg.addEventListener("pointerdown",e=>{ if(e.button>0||!MAPV.vb) return; cancelAnimationFrame(mapAnim); svg.setPointerCapture(e.pointerId);
+    ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t:e.target.closest("path.el")}); if(ptrs.size===1) moved=false; begin(); tip.hidden=true; });
+  svg.addEventListener("pointermove",e=>{
+    const p=ptrs.get(e.pointerId);
+    if(!p){ const el=e.target.closest("path.el"); if(!el||e.pointerType!=="mouse"){ tip.hidden=true; return; }
+      const wr=wrap.getBoundingClientRect(); tip.innerHTML=`<b>${esc(ESEATS[+el.dataset.i].n)}</b><br>${esc(el.dataset.desc.replace(/^./,c=>c.toUpperCase()))}`;
+      tip.hidden=false; tip.style.left=Math.max(tip.offsetWidth/2+4,Math.min(wr.width-tip.offsetWidth/2-4,e.clientX-wr.left))+"px"; tip.style.top=(e.clientY-wr.top-8)+"px"; return; }
+    p.x=e.clientX; p.y=e.clientY; if(Math.hypot(p.x-p.x0,p.y-p.y0)>5||ptrs.size>1){ moved=true; svg.classList.add("dragging"); }
+    if(!moved) return;
+    const m=mid(), u=toUser(m.x,m.y,g0.inv), k=ptrs.size>1&&g0.d&&m.d?g0.d/m.d:1;
+    MAPV.vb=clampV({x:g0.m.x-(u.x-g0.vb.x)*k, y:g0.m.y-(u.y-g0.vb.y)*k, w:g0.vb.w*k, h:g0.vb.h*k}); applyView();
+  });
+  const end=e=>{ const p=ptrs.get(e.pointerId); if(!p) return; ptrs.delete(e.pointerId);
+    if(!ptrs.size){ svg.classList.remove("dragging"); if(!moved&&p.t&&e.type==="pointerup") selectSeat(+p.t.dataset.i,false); }
+    else begin(); };
+  svg.addEventListener("pointerup",end); svg.addEventListener("pointercancel",end);
+  svg.addEventListener("pointerleave",e=>{ if(e.pointerType==="mouse") tip.hidden=true; });
+  svg.addEventListener("wheel",e=>{ if(!MAPV.vb) return;
+    if(!(e.ctrlKey||e.metaKey)){ mapHint("Hold Ctrl or ⌘ and scroll to zoom"); return; }
+    e.preventDefault(); cancelAnimationFrame(mapAnim);
+    const u=toUser(e.clientX,e.clientY,svg.getScreenCTM().inverse()), v=MAPV.vb, k=Math.exp(Math.max(-60,Math.min(60,e.deltaY))*0.012);
+    MAPV.vb=clampV({x:u.x-(u.x-v.x)*k, y:u.y-(u.y-v.y)*k, w:v.w*k, h:v.h*k}); applyView(); },{passive:false});
+  svg.addEventListener("keydown",e=>{ const el=e.target.closest("path.el"); if(el&&(e.key==="Enter"||e.key===" ")){ e.preventDefault(); selectSeat(+el.dataset.i,true); } });
+  new ResizeObserver(()=>{ if(MAPV.view==="map"&&MAPV.vb) MAPV.vb=clampV(MAPV.vb), applyView(); }).observe(wrap);
+}
+
 /* ---------- 4. Lists ---------- */
 function listRows(pc, limit, detail){
   const sim=state.sim, rep=sim.rep, m=members(rep)[pc], list=LISTS[pc]||[], N=sim.N, pi=sim.codes.indexOf(pc);
@@ -908,7 +1057,7 @@ function update(quick){
     const ok=await simulate(quick?600:null, f=>loading(true,f,quick), token);
     if(!ok) return;
     loading(true,1,quick);
-    drawHouse(); drawFactors(); drawLists(); drawSeatList(); drawCustom(); if(document.querySelector("details.more").open) drawVotes();
+    drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes();
     if(!quick){
       wrap.classList.remove("busy"); sec.classList.remove("busy");
       const after=snapshot(); if(statusEl) simStatus(statusEl.id,"done",deltaText(lastSnap,after,statusEl.id)); statusEl=null; lastSnap=null;
@@ -939,7 +1088,7 @@ document.getElementById("simPanel").addEventListener("click",e=>{ if(e.target.id
   document.addEventListener("focusout",e=>{ if(e.target.closest("[data-tip]")) ft.hidden=true; });
   document.addEventListener("click",e=>{ const el=e.target.closest("[data-tip]"); if(el) show(el); else ft.hidden=true; });
 })();
-buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); drawSeatList(); update();
+buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); update();
 window.addEventListener("resize",()=>{ placeMaj(document.getElementById("blocs")); placeMaj(document.getElementById("dockBar")); });
 (function(){ const dock=document.getElementById("dock"), target=document.getElementById("hemi");
   const io=new IntersectionObserver(es=>es.forEach(e=>{ const on=!e.isIntersecting && e.boundingClientRect.top<0; dock.classList.toggle("on",on); dock.setAttribute("aria-hidden",!on); }),{threshold:0});
