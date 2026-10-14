@@ -1,0 +1,73 @@
+# NZ 2026 election seat forecast
+
+A single-page seat forecast for New Zealand's 7 November 2026 general election. The page runs thousands of simulated elections in the browser and shows the most likely Parliament, who can govern, electorate chances and party list outcomes.
+
+## Build and run
+
+```bash
+python3 data/data.py   # only after editing seats, candidates or party lists in data.py
+python3 build.py       # always, after any change: writes dist/index.html
+open dist/index.html   # no server needed; the page is fully self-contained
+```
+
+`build.py` checks `src/body.html` for unbalanced tags before building. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
+
+## Files
+
+| Path | What it is |
+|---|---|
+| `src/head.html` | Doctype, meta tags and title, up to the opening `<style>` |
+| `src/base.css`, `src/extra.css` | All styles. Colours are CSS variables on `:root` with dark-mode values; party colours are `--NAT`, `--LAB`, `--GRN`, `--ACT`, `--NZF`, `--TPM`, `--OPP`, `--OTH` |
+| `src/body.html` | All page markup |
+| `src/head.js` | Constants: `POLLS` (with fieldwork midpoints), `AVG`, `PARTIES`, `TREND` (late-swing slopes), `SPECIALS`, lookup indexes |
+| `src/main.js` | Everything else: state, seat model, simulation, rendering, controls |
+| `data/data.py` | Source of truth for the 71 electorates (candidates, starting weights, notes) and every party list. Writes `data/data.json` |
+| `data/data.json` | Generated. Embedded in the page as `const DATA` |
+| `data/NZ_2026_Poll_Seat_Tracker.xlsx` | Companion spreadsheet: Sainte-Laguë seat calculator and poll log |
+| `dist/index.html` | Built output |
+
+## How it works
+
+**Inputs live in one `state` object** (`main.js`): party vote (`shares`), the poll it came from (`pollBase`), called seats (`locks`), the three traditional blocs (`bloc`: `opp` Labour-led, `und` kingmaker, `gov` National-led), polling error (`err`, 0 means simulations off), `simSeats`, the National split-ticket slider (`split`), `trend`, Opportunity's `oppMode` (`direct` or `squeeze`), `squeeze` and `squeezeTo`, and `custom` blocs.
+
+**`eff()` is the party vote actually used.** It applies late swing, then Opportunity's squeeze (squeeze mode only), on top of `state.shares`. Always read party vote through `eff()`.
+
+**Seat chances:** `seatProbs(seat, shares)` turns each candidate's starting weight `w` into probabilities, nudged by how far their party's vote is from the poll average.
+
+**Simulation:** `simulate()` is async and runs in batches of 400 so the progress bar can update; a newer run cancels an older one. Each run:
+1. Adds polling error to the party vote: independent per party, plus an optional shared swing between blocs.
+2. Decides all 71 electorates. Every seat draws exactly one random number per run, whether or not it's called, so changing one seat never disturbs another.
+3. Allocates seats with Sainte-Laguë: 5% threshold or an electorate, overhang for extra electorate wins, and vacant seats when a list runs out (Te Pāti Māori has one list candidate).
+
+The random seed is fixed, so identical inputs give identical results. That's deliberate: differences you see come only from what changed.
+
+**Results (`state.sim`)** are typed arrays with one slot per run: seats per party, independent seats, House size, outcome (0 National-led majority, 1 Labour-led, 2 neither), factor flags, per-candidate seat wins (`seatWin`), and per-rank list entries (`listIn`). Every percentage on the page is a count from these. Custom blocs reuse them, so they update without a rerun.
+
+**`sim.rep` is the Parliament drawn on screen:** the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.
+
+## Page sections
+
+1. **Most likely Parliament:** seat diagram with a majority outline, odds cards, party bar with hover MP lists, and a collapsible detail table.
+2. **Simulation:** intro and reset, then cards for Opportunity (side, vote with direct and squeeze modes, impact), National's overhang (bars, list table under More info), polling error, Te Pāti Māori, breakaway MPs and late swing.
+3. **Electorate seats:** cards with simulated chances, rating pills and calls.
+4. **Party list outcome.**
+5. **More tools:** the all-party chart of what extra votes would do.
+6. **Traditional government blocs:** which bloc each other party sits in.
+7. **Custom blocs:** saved in localStorage under `nzSeatForecast.customBlocs.v1`.
+
+A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
+
+## Conventions
+
+- Plain sentence case in all text. Party names in full in prose; codes only in tight labels.
+- Every number shown should trace to the simulation arrays or the data files. Don't hard-code figures in explanatory text.
+- Tooltips: add `data-tip="..."` (plain text) or `data-tiphtml="..."` (escaped HTML) to any element, and give non-buttons `tabindex="0"`.
+- Respect `prefers-reduced-motion` for any animation (confetti, smooth scrolling, spinners).
+- Opportunity status messages report Opportunity and overall odds only; National's card reports National's numbers.
+- Sources for stated party positions are linked inline in the text where they appear.
+
+## Data notes
+
+- Polls are to 13 October 2026. Add new ones at the top of `POLLS` in `head.js` with a `mid` date; the newest becomes the default.
+- Electorate starting weights come from 2023 results (notional for new boundaries), adjusted for retirements and the published electorate polls named in each seat's `note`. They are estimates, not published forecasts.
+- Te Tai Tokerau has no published candidate poll; Kapa-Kingi's chance is an estimate.

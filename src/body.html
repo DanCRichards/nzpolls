@@ -1,0 +1,282 @@
+<div class="loadbar" id="loadbar" aria-hidden="true"><i></i></div>
+<div class="loadpill" id="loadpill" role="status" hidden></div>
+<div class="dock" id="dock" aria-hidden="true">
+  <div class="dockin">
+    <svg id="miniHemi" viewBox="0 0 420 222" class="mini"></svg>
+    <div class="dockinfo"><p id="dockOdds"></p><div id="dockBar"></div><div class="dockcounts" id="dockCounts"></div></div>
+    <button class="dockreset" id="dockReset" title="Reset everything to the latest poll">Reset</button>
+  </div>
+</div>
+<main>
+  <div class="top">
+    <div>
+      <h1>Who gets the seats?</h1>
+      <p class="sub">A seat forecast for New Zealand's 7 November 2026 election, built from the polls, 71 electorate contests and every party list.</p>
+    </div>
+    <div class="topctl">
+      <label class="inline">Party vote from <select id="scenario"></select></label>
+      <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
+        <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
+      </label>
+      <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
+    </div>
+  </div>
+
+  <!-- 1. Parliament -->
+  <section class="chamber" id="houseSection" aria-labelledby="h-house">
+    <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
+    <p class="hint" id="houseHint">Running simulations…</p>
+    <div class="house">
+      <div class="chamberwrap" id="chamberwrap">
+        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram"></svg>
+        <div class="tip" id="tip" hidden></div>
+        <label class="toggle"><input type="checkbox" id="showMps"> Show MP initials (hover or tap a seat for the name)</label>
+      </div>
+      <div>
+        <p class="verdict" id="verdict"></p>
+        <div class="odds" id="odds"></div>
+      </div>
+    </div>
+    <div class="blocs wide" id="blocs"></div>
+    <details class="moresides" id="tableDetails"><summary><span>Polling, seat ranges and chances<span class="sum">The detail behind each party's number</span></span><svg class="chev" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+      <div class="inner">
+        <div class="tablewrap">
+          <table class="wide">
+            <thead><tr><th>Party</th><th>Polling</th><th>Most likely seats</th><th>80% range</th><th style="text-align:left">Range</th><th>Chance in Parliament</th></tr></thead>
+            <tbody id="partyBody"></tbody>
+          </table>
+        </div>
+        <p class="note"><button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button> "Most likely seats" is the middle result across all simulations; 80% of runs fall inside the range. The diagram shows the single simulated Parliament closest to the middle result, so you can see actual MPs.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- 2. Simulation -->
+  <section class="panel block" id="simSection" aria-labelledby="h-sim">
+    <h2 id="h-sim">The simulation <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></h2>
+    <div class="simintro">
+      <p class="hint" style="margin:0">The forecast plays out the election thousands of times, each with a slightly different party vote and electorate results, and counts how often each outcome happens <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button>. The cards below are the factors that decide who can govern. Each bar shows how much a factor moves the odds; open a card to see why it matters and to change it.</p>
+      <button class="btn" id="resetLevers">Reset to the latest poll</button>
+    </div>
+        <div class="lv big opp" id="lv-opp">
+      <div class="lvhead"><div><span class="lvt">Opportunity</span><span class="lvv" id="v-opp"></span></div>
+        <button class="lvbtn" data-open="opp" aria-expanded="false" aria-controls="b-opp">More info</button></div>
+      <div class="impact" data-tip="For Opportunity this is how often its seats decide which side can govern, or how much the 5% threshold moves the odds, whichever is bigger." tabindex="0">How much it moves the odds <span><i id="i-opp"></i></span></div>
+
+      <div class="oppblock">
+        <div class="lhead" style="font-weight:500"><span>Which side would it back?</span></div>
+        <div class="sideseg" role="group" aria-label="Opportunity sides with" id="oppSide">
+          <button data-b="opp">Labour-led</button><button data-b="und">Undecided</button><button data-b="gov">National-led</button>
+        </div>
+        <p class="thr" style="margin:4px 0 0">Opportunity hasn't picked a side. Both Luxon and Hipkins are telling their voters not to give Opportunity their party vote, and Luxon has ruled out working with it. Opportunity's leader, Qiulae Wong, says she'll approach whichever major party gets the biggest party vote.</p>
+      </div>
+
+      <div class="oppblock">
+        <div class="lhead" style="font-weight:500"><span>Election-day vote</span><b id="oppOut">8.0%</b></div>
+        <div class="modeswitch" role="radiogroup" aria-label="How to set Opportunity's vote" id="oppMode">
+          <button role="radio" data-m="direct"><b>Set it directly</b><span>Choose the vote yourself</span></button>
+          <button role="radio" data-m="squeeze"><b>Squeeze from the poll</b><span>Some voters switch late</span></button>
+        </div>
+        <p class="thr" id="oppModeNote" style="margin:6px 0 10px"></p>
+
+        <div id="oppDirect">
+          <div class="thrwrap"><input type="range" id="oppVote" min="0" max="20" step="0.1" aria-label="Opportunity party vote"><i class="fivemark" aria-hidden="true"></i><i class="pollmark" id="pollmark" aria-hidden="true"><span id="pollmarkLab"></span></i></div>
+          <div class="ends rel"><span>0%</span><span class="fivelab">5% threshold</span><span>20%</span></div>
+        </div>
+
+        <div id="oppSqueeze" hidden>
+          <div class="lhead" style="font-weight:500"><span>Opportunity voters who switch at the last minute</span><b id="sqOut">None</b></div>
+          <input type="range" id="squeeze" min="0" max="60" step="5" value="0" aria-label="Share of Opportunity voters who switch">
+          <div class="ends"><span>No one switches</span><span>60% switch</span></div>
+          <p class="thr" style="margin:4px 0 0" id="v-sq"></p>
+          <button class="lvbtn" data-open="sq" aria-expanded="false" aria-controls="b-sq" style="margin-top:6px">Where switchers go</button>
+          <div class="lvbody" id="b-sq" hidden>
+            <p class="what">Parties near 5% often lose votes at the end, as supporters worry a vote for them will be wasted, and both Labour and National are telling their supporters not to vote Opportunity. Choose where the switchers go; the shares rebalance to add up to 100%.</p>
+            <div id="sqTo"></div>
+          </div>
+        </div>
+        <p class="simstatus" id="st-opp" aria-live="polite" hidden></p>
+      </div>
+
+      <div class="lvbody" id="b-opp" hidden>
+        <p class="what">A party needs 5% of the party vote or an electorate to get any list seats. Under 5%, Opportunity's MPs vanish and their seats are shared among everyone else, which is why its vote and its side decide so much.</p>
+        <p class="live" id="l-opp"></p><div class="cond" id="c-opp"></div>
+      </div>
+    </div>
+
+
+
+    <div class="lv big" id="lv-nat">
+      <div class="lvhead"><div><span class="lvt">National's overhang</span><span class="lvv" id="v-nat"></span></div>
+        <button class="lvbtn" data-open="nat" aria-expanded="false" aria-controls="b-nat">More info</button></div>
+      <p class="define"><b>Overhang:</b> more electorates won than the party vote earns. They're all kept, Parliament grows, and no list MPs get in.</p>
+      <div class="cmp">
+        <div class="cmprow"><span class="cmplab">Earned by party vote</span><div class="cmpbar"><i id="cb-ent"></i></div><b id="n-ent"></b></div>
+        <div class="cmprow"><span class="cmplab">Electorates won</span><div class="cmpbar"><i id="cb-elec"></i><i id="cb-over" class="over"></i></div><b id="n-elec"></b></div>
+      </div>
+      <p class="plain" id="p-nat"></p>
+      <div class="lvctl">
+        <div class="lhead" style="font-weight:500"><span>National candidates vs party vote</span><b id="splitOut">Even</b></div>
+        <input type="range" id="split" min="-6" max="10" step="1" value="0" aria-label="National candidates compared with National's party vote">
+        <div class="ends"><span>Candidates do worse</span><span>Candidates do better</span></div>
+        <p class="simstatus" id="st-split" aria-live="polite" hidden></p>
+      </div>
+      <div class="impact">How much it moves the odds <span><i id="i-nat"></i></span></div>
+      <div class="lvbody" id="b-nat" hidden>
+        <p class="what">Under MMP the party vote sets how many seats a party gets. Electorate winners fill those seats first and list MPs fill the rest. If a party wins more electorates than its party vote earns, it keeps them all and Parliament grows to fit them. Those are overhang seats, and each one raises the number needed for a majority.</p>
+        <div class="natpeople" id="natPeople"></div>
+        <p class="live" id="l-nat"></p>
+        <div class="cond" id="c-nat"></div>
+      </div>
+    </div>
+
+    <div class="lv" id="lv-err">
+      <div class="lvhead"><div><span class="lvt">How wrong the polls could be</span><span class="lvv" id="v-err"></span></div>
+        <button class="lvbtn" data-open="err" aria-expanded="false" aria-controls="b-err">Open to change</button></div>
+      <div class="impact">How much it moves the odds <span><i id="i-err"></i></span></div>
+      <div class="lvbody" id="b-err" hidden>
+        <p class="what">Hover over each option for what it means. Polls usually miss the final result by a few points, and misses often favour one side: in some elections the National-led parties beat their polling, in others the Labour-led parties do. Each simulation draws its own miss, so this setting controls how wide the range of outcomes is.</p>
+        <div class="seg segwide" role="group" aria-label="Polling error" id="errSeg">
+          <button data-k="0" data-tip="Off: no simulations. One result using the poll exactly as published, with every electorate going to its favourite. Every chance shows as 0% or 100%.">Off</button><button data-k="1" data-tip="Small: only the random error from interviewing about 1,000 people. A party on 28% usually lands within about ±1.8 points; one on 8% within about ±1.1. Real elections usually miss by more than this.">Small</button><button data-k="1.6" data-tip="Typical (recommended): about how far NZ polls usually end up from the result. A party on 28% usually lands within about ±2.9 points; one on 8% within about ±1.8.">Typical</button><button data-k="2.4" data-tip="Big miss: for testing a bad polling year. A party on 28% usually lands within about ±4.3 points; one on 8% within about ±2.6.">Big miss</button><button data-k="0.3" data-tip="Specials only: for after election night, when only special votes are left to count. Results can only move by a few tenths of a point, roughly what specials have shifted in recent elections.">Specials only</button>
+        </div>
+        <p class="thr" style="margin:-4px 0 10px">"Off" turns the simulations off: you get one result using the poll exactly as published, with every electorate going to its favourite, and every chance shows as 0% or 100%.</p>
+        <label class="switch" data-tip="On: in each simulation, the whole National-led side can do a bit better or worse than polled together, and the Labour-led side the opposite, as happens when polls miss in one direction. Off: each party's error is independent, which tends to understate the chance of a clear win for one side."><input type="checkbox" id="corr" checked><span class="track" aria-hidden="true"></span> Misses can favour one whole side</label>
+        <p class="live" id="l-err" style="margin-top:10px"></p><div class="cond" id="c-err"></div>
+      </div>
+    </div>
+
+    <div class="lv" id="lv-tpm">
+      <div class="lvhead"><div><span class="lvt">Te Pāti Māori's overhang</span><span class="lvv" id="v-tpm"></span></div>
+        <button class="lvbtn" data-open="tpm" aria-expanded="false" aria-controls="b-tpm">Open to change</button></div>
+      <div class="impact">How much it moves the odds <span><i id="i-tpm"></i></span></div>
+      <div class="lvbody" id="b-tpm" hidden>
+        <p class="what">Te Pāti Māori is campaigning only for electorate votes, and its list has one name. Its party vote is worth one or two seats, so each Māori electorate it holds beyond that adds a seat to the House and raises the bar for a majority. Call these seats to test it.</p>
+        <p class="live" id="l-tpm"></p><div class="cond" id="c-tpm"></div>
+        <div id="s-tpm" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="lv" id="lv-oth">
+      <div class="lvhead"><div><span class="lvt">Breakaway MPs in Māori seats</span><span class="lvv" id="v-oth"></span></div>
+        <button class="lvbtn" data-open="oth" aria-expanded="false" aria-controls="b-oth">Open to change</button></div>
+      <div class="impact">How much it moves the odds <span><i id="i-oth"></i></span></div>
+      <div class="lvbody" id="b-oth" hidden>
+        <p class="what">Mariameno Kapa-Kingi (Te Tai Tokerau Party) and Tākuta Ferris (independent) both left Te Pāti Māori. A win for either adds a seat to the House, counted here as "Independent / other". Neither has committed to a side: Kapa-Kingi has said she'd consider working with National (<a href="https://www.1news.co.nz/2026/05/11/kapa-kingi-splits-from-te-pati-maori-launches-new-party/" target="_blank" rel="noopener">1News</a>), and Ferris urges a party vote for the left but would work with the current coalition (<a href="https://thespinoff.co.nz/atea/01-10-2026/the-wildest-moments-from-a-hectic-te-tai-tonga-debate" target="_blank" rel="noopener">The Spinoff</a>), so they sit with the kingmakers unless you move them. Call these seats to test it.</p>
+        <p class="live" id="l-oth"></p><div class="cond" id="c-oth"></div>
+        <div id="s-oth" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+
+
+    <div class="lv" id="lv-trend">
+      <div class="lvhead"><div><span class="lvt">Late swing</span><span class="lvv" id="v-trend"></span></div>
+        <button class="lvbtn" data-open="trend" aria-expanded="false" aria-controls="b-trend">More info</button></div>
+      <div class="lvctl">
+        <div class="lhead" style="font-weight:500"><span>How much of the recent poll trend continues</span><b id="trendOut">None</b></div>
+        <input type="range" id="trend" min="0" max="150" step="10" value="0" aria-label="How much of the recent trend continues to election day">
+        <div class="ends"><span>0%: polls frozen</span><span>150%: trend speeds up</span></div>
+      </div>
+      <div class="lvbody" id="b-trend" hidden>
+        <p class="what">Polls are a snapshot from a few weeks out. Each party's trend is a straight line through all the polls since early August. At 100%, that trend carries on for the remaining days to 7 November.</p>
+        <div class="trendchips" id="trendChips"></div>
+      </div>
+    </div>
+
+    <details style="margin:10px 0 4px"><summary style="cursor:pointer;font-weight:500">Adjust every party's vote</summary>
+      <div id="votes" style="margin-top:8px"></div><p class="thr" id="votesum"></p>
+    </details>
+    <p class="thr" id="simNote"></p>
+  </section>
+
+  <!-- 3. Electorates -->
+  <section class="panel block" aria-labelledby="h-seats">
+    <h2 id="h-seats">Electorate seats</h2>
+    <div class="seatmode">
+      <label class="switch"><input type="checkbox" id="simSeats" checked><span class="track" aria-hidden="true"></span> Simulate electorate results</label>
+      <p class="thr" id="seatModeNote" style="margin:4px 0 0"></p>
+    </div>
+    <p class="hint">Chances are my estimates from each seat's 2023 result (or its predecessor's), the national swing since, candidates, retirements and the five electorate polls published. They shift with the party vote you set. Tap a candidate to call the seat for them; tap again to hand it back to the model. Called seats are fixed in every simulation.</p>
+    <div class="presets" id="presets"></div>
+    <div class="controls searchrow">
+      <label class="inline">Find <input type="search" id="seatSearch" placeholder="Electorate or candidate"></label>
+      <label class="inline">Show
+        <select id="seatFilter">
+          <option value="key" selected>Seats that change the shape of Parliament</option>
+          <option value="close">Competitive seats</option>
+          <option value="flip">Projected to change hands</option>
+          <option value="all">All 71</option>
+          <option value="maori">Māori electorates</option>
+          <option value="locked">Seats you've called</option>
+          <option value="oth">Seats an independent or other MP could win</option>
+        </select>
+      </label>
+      <button class="btn" id="clearLocks">Clear all calls</button>
+    </div>
+    <p class="thr" id="seatSummary" style="margin-bottom:8px"></p>
+    <div id="seatList"></div>
+  </section>
+
+  <!-- 4. Lists -->
+  <section class="panel block" aria-labelledby="h-lists">
+    <h2 id="h-lists">Party list outcome</h2>
+    <p class="hint">Electorate winners take a party's seats first; the rest go down its list, skipping anyone already elected. Projections use the most likely Parliament above; chances come from all simulations.</p>
+    <div class="pchips" id="listParty"></div>
+    <p class="verdict" style="font-size:1.05rem" id="listSummary"></p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Candidate</th><th style="text-align:left">Standing in</th><th style="text-align:left">Projection</th><th>Chance in</th></tr></thead>
+        <tbody id="listBody"></tbody>
+      </table>
+    </div>
+    <div class="presets" style="margin-top:10px"><button class="btn" id="listMore">Show full list</button></div>
+  </section>
+
+  <!-- 5. More tools -->
+  <details class="more">
+    <summary>More tools: what extra votes would do</summary>
+    <section class="panel">
+      <h2>What would extra votes do?</h2>
+      <p class="hint">Pick a party and move its party vote up or down. Every party's seats are shown together, so you can see who gains and who pays for it. Everyone else's votes and the electorate results stay fixed.</p>
+      <div class="controls">
+        <label class="inline">Votes change for <select id="vparty"></select></label>
+        <label class="inline">Range
+          <select id="vamt"><option value="10000">± 10,000</option><option value="25000">± 25,000</option><option value="50000" selected>± 50,000</option><option value="100000">± 100,000</option><option value="250000">± 250,000</option></select>
+        </label>
+      </div>
+      <p class="verdict" id="vsummary" style="font-size:1.05rem"></p>
+      <div class="vchartwrap" id="vchartwrap">
+        <svg class="vchart" id="stair" viewBox="0 0 680 340" role="img" aria-label="Seats for every party as one party's votes change"></svg>
+        <div class="vtip" id="vtip" hidden></div>
+      </div>
+      <div class="vlegend" id="vlegend"></div>
+      <ul class="events" id="vevents"></ul>
+    </section>
+  </details>
+
+
+  <!-- Traditional government blocs -->
+  <section class="panel block" aria-labelledby="h-sides">
+    <div class="sides">
+      <h2 id="h-sides">Traditional government blocs</h2>
+      <p class="hint">The usual coalition groupings used in the main forecast: a Labour-led bloc, a National-led bloc, and kingmakers in between. Labour and National always lead their blocs; Opportunity's side is set in the simulation section above.</p>
+      <div id="sides"></div>
+    </div>
+  </section>
+
+  <!-- Custom blocs -->
+  <section class="panel block" aria-labelledby="h-custom">
+    <h2 id="h-custom">Custom blocs</h2>
+    <p class="hint">Build your own groupings to test any coalition. Tick parties to add them. Results use the same simulations as the rest of the page, so they update instantly. A party can be in more than one custom bloc, so you can compare alternatives side by side.</p>
+    <div class="presets" id="customPresets"></div>
+    <div id="customList"></div>
+    <div class="presets" style="margin-top:10px"><button class="btn primary" id="addBloc">Add a bloc</button></div>
+  </section>
+
+  <p class="note" style="margin-top:20px">Polls to 13 Oct 2026 (latest: 1News–Verian, 8–12 Oct). Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
+</main>
+<div class="ftip" id="ftip" role="tooltip" hidden></div>
+<dialog id="simPanel" class="dlg" aria-labelledby="simPanelTitle">
+  <div class="dlghead"><h2 id="simPanelTitle">How the simulation works</h2><button class="btn" id="simPanelClose">Close</button></div>
+  <div id="simPanelBody"></div>
+</dialog>
