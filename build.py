@@ -1,6 +1,7 @@
 """Build dist/index.html: one self-contained page from the files in src/ and data/.
 
     python3 data/data.py   # only after editing seats, candidates or party lists
+    python3 data/map.py    # only after replacing the boundary files in data/boundaries/
     python3 build.py       # always, after any change
 """
 import html.parser, json, os, sys
@@ -37,9 +38,10 @@ def main():
     if check.errors or check.stack:
         sys.exit("body.html structure problem:\n  " + "\n  ".join(check.errors or [f"unclosed {check.stack[-5:]}"]))
     json.loads(read("data", "data.json"))  # fail early on bad data
+    json.loads(read("data", "map.json"))
     page = (read("src", "head.html") + "<style>" + read("src", "base.css") + read("src", "extra.css")
             + "</style>\n</head>\n<body>\n" + body
-            + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\n"
+            + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\nconst MAP=" + read("data", "map.json") + ";\n"
             + read("src", "head.js") + read("src", "main.js") + "\n</script>\n</body>\n</html>\n")
     os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
     open(os.path.join(ROOT, "dist", "index.html"), "w", encoding="utf-8").write(page)
