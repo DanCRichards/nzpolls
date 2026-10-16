@@ -445,3 +445,15 @@ svg.seatmap.dragging{cursor:grabbing}
 .maplegend .lg{display:inline-flex;align-items:center;gap:6px}
 .maplegend .lg i{width:22px;height:13px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
 .maplegend .lead{flex-basis:100%;color:var(--ink)}
+
+/* intro and settings */
+.intro{margin:4px 0 16px;max-width:68ch}
+.eyebrow{font-size:.82rem;font-weight:600;color:var(--chamber);letter-spacing:.02em;margin-bottom:6px}
+.intro h1{margin-bottom:8px}
+.lede{font-size:1.08rem;line-height:1.45}
+.introsteps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px;color:var(--muted);font-size:.93rem;counter-reset:is}
+.introsteps li{position:relative;padding-left:26px}
+.introsteps li::before{counter-increment:is;content:counter(is);position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--chamber-soft);color:var(--chamber);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.introsteps b{color:var(--ink);font-weight:600}
+.topctl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px 12px;margin-bottom:16px}
+.ctltitle{flex-basis:100%;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}

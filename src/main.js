@@ -938,6 +938,9 @@ function drawVotes(){
 }
 /* ---------- controls ---------- */
 function buildControls(){
+  { const now=new Date(), d=Math.round((new Date(2026,10,7)-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/864e5);
+    document.getElementById("daysLeft").textContent= d>1?` · ${d} days to go`: d===1?" · tomorrow": d===0?" · today":"";
+    document.getElementById("introPoll").textContent=`the latest poll (${POLLS[0].id})`; }
   const sel=document.getElementById("scenario");
   sel.innerHTML=`<option value="0">Latest poll: ${POLLS[0].id}</option><option value="avg">Average of ${POLLS.filter(p=>p.inc).length} polls since 1 Sep</option><optgroup label="Earlier polls">`+POLLS.slice(1).map((p,i)=>`<option value="${i+1}">${p.id}</option>`).join("")+`</optgroup>`+`<option value="custom" disabled>Custom (edited)</option>`;
   sel.onchange=()=>{ state.shares={...(sel.value==="avg"?AVG:POLLS[+sel.value].s)}; state.pollBase={...state.shares}; state.pollName=sel.value==="avg"?"Poll average":POLLS[+sel.value].id; syncVotes(); syncLevers(); update(); };

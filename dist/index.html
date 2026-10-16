@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NZ 2026 seat simulator</title>
+<title>NZ 2026 election seat forecast</title>
+<meta name="description" content="Who gets the seats? A simulation-based forecast of New Zealand's 7 November 2026 election: the most likely Parliament, who could govern, every electorate and every party list.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -571,6 +572,18 @@ svg.seatmap.dragging{cursor:grabbing}
 .maplegend .lg{display:inline-flex;align-items:center;gap:6px}
 .maplegend .lg i{width:22px;height:13px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
 .maplegend .lead{flex-basis:100%;color:var(--ink)}
+
+/* intro and settings */
+.intro{margin:4px 0 16px;max-width:68ch}
+.eyebrow{font-size:.82rem;font-weight:600;color:var(--chamber);letter-spacing:.02em;margin-bottom:6px}
+.intro h1{margin-bottom:8px}
+.lede{font-size:1.08rem;line-height:1.45}
+.introsteps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px;color:var(--muted);font-size:.93rem;counter-reset:is}
+.introsteps li{position:relative;padding-left:26px}
+.introsteps li::before{counter-increment:is;content:counter(is);position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--chamber-soft);color:var(--chamber);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.introsteps b{color:var(--ink);font-weight:600}
+.topctl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px 12px;margin-bottom:16px}
+.ctltitle{flex-basis:100%;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 </style>
 </head>
 <body>
@@ -584,18 +597,23 @@ svg.seatmap.dragging{cursor:grabbing}
   </div>
 </div>
 <main>
-  <div class="top">
-    <div>
-      <h1>Who gets the seats?</h1>
-      <p class="sub">A seat forecast for New Zealand's 7 November 2026 election, built from the polls, 71 electorate contests and every party list.</p>
-    </div>
-    <div class="topctl">
-      <label class="inline">Party vote from <select id="scenario"></select></label>
-      <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
-        <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-      </label>
-      <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
-    </div>
+  <header class="intro">
+    <p class="eyebrow">New Zealand election · Saturday 7 November 2026<span id="daysLeft"></span></p>
+    <h1>Who gets the seats?</h1>
+    <p class="lede">This forecast plays out the election thousands of times to show the most likely Parliament and who could form a government.</p>
+    <ol class="introsteps">
+      <li><b>See the result.</b> The most likely Parliament is just below.</li>
+      <li><b>Try what-ifs.</b> Change the poll, Opportunity's vote or any electorate, and the forecast reruns.</li>
+      <li><b>Built from</b> <span id="introPoll">the latest poll</span>, all 71 electorate races and every party list.</li>
+    </ol>
+  </header>
+  <div class="topctl" role="group" aria-label="Forecast settings">
+    <span class="ctltitle">Forecast settings</span>
+    <label class="inline">Party vote from <select id="scenario"></select></label>
+    <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
+      <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
+    </label>
+    <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
   </div>
 
   <!-- 1. Parliament -->
@@ -1882,6 +1900,9 @@ function drawVotes(){
 }
 /* ---------- controls ---------- */
 function buildControls(){
+  { const now=new Date(), d=Math.round((new Date(2026,10,7)-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/864e5);
+    document.getElementById("daysLeft").textContent= d>1?` · ${d} days to go`: d===1?" · tomorrow": d===0?" · today":"";
+    document.getElementById("introPoll").textContent=`the latest poll (${POLLS[0].id})`; }
   const sel=document.getElementById("scenario");
   sel.innerHTML=`<option value="0">Latest poll: ${POLLS[0].id}</option><option value="avg">Average of ${POLLS.filter(p=>p.inc).length} polls since 1 Sep</option><optgroup label="Earlier polls">`+POLLS.slice(1).map((p,i)=>`<option value="${i+1}">${p.id}</option>`).join("")+`</optgroup>`+`<option value="custom" disabled>Custom (edited)</option>`;
   sel.onchange=()=>{ state.shares={...(sel.value==="avg"?AVG:POLLS[+sel.value].s)}; state.pollBase={...state.shares}; state.pollName=sel.value==="avg"?"Poll average":POLLS[+sel.value].id; syncVotes(); syncLevers(); update(); };
