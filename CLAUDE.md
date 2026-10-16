@@ -46,6 +46,8 @@ open dist/index.html   # no server needed; the page is fully self-contained
 
 The random seed is fixed, so identical inputs give identical results. That's deliberate: differences you see come only from what changed.
 
+**Page load:** `firstLoad()` runs 600 simulations, draws them with `renderAll()`, then calls `update()` for the full count. Because the seed is fixed, the quick runs are the first runs of the full set. Before any script runs, the seat diagram shows a grey placeholder that `build.py` writes into `{{HEMI_SKELETON}}` (same layout as `seatPositions()`), with placeholder odds cards in `body.html`.
+
 **Results (`state.sim`)** are typed arrays with one slot per run: seats per party, independent seats, House size, outcome (0 National-led majority, 1 Labour-led, 2 neither), factor flags, per-candidate seat wins (`seatWin`), and per-rank list entries (`listIn`). Every percentage on the page is a count from these. Custom blocs reuse them, so they update without a rerun.
 
 **`sim.rep` is the Parliament drawn on screen:** the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.

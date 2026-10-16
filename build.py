@@ -4,7 +4,7 @@
     python3 data/map.py    # only after replacing the boundary files in data/boundaries/
     python3 build.py       # always, after any change
 """
-import datetime, html, html.parser, json, os, re, shutil, sys
+import datetime, html, html.parser, json, math, os, re, shutil, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = "https://nzpolls.co.nz/"
@@ -45,6 +45,19 @@ def latest_poll():
     return m.group(1), f"<b>Latest poll</b> ({html.escape(m.group(1))}): {html.escape(summary)}."
 
 
+def hemi_skeleton(n=120):
+    """Grey seat diagram shown before the first simulation finishes; same layout as seatPositions() in main.js."""
+    rows, inner = 8, 0.36
+    radii = [inner + (1 - inner) * i / (rows - 1) for i in range(rows)]
+    counts = [n * r / sum(radii) for r in radii]; fl = [math.floor(c) for c in counts]
+    for _, i in sorted(((c - f, i) for i, (c, f) in enumerate(zip(counts, fl))), reverse=True)[:n - sum(fl)]:
+        fl[i] += 1
+    R, cx, cy, r = 200, 210, 212, 200 * (1 - inner) / (rows - 1) * 0.42
+    dots = [f'<circle class="skel" cx="{cx + R * rr * math.cos(t):.1f}" cy="{cy - R * rr * math.sin(t):.1f}" r="{r:.2f}"/>'
+            for rr, k in zip(radii, fl) for t in (math.pi - math.pi * j / (k - 1) for j in range(k))]
+    return "".join(dots)
+
+
 def main():
     body = read("src", "body.html")
     check = TagCheck()
@@ -55,7 +68,7 @@ def main():
     json.loads(read("data", "map.json"))
     poll_id, poll_summary = latest_poll()
     today = datetime.date.today().isoformat()
-    body = body.replace("{{POLL_ID}}", html.escape(poll_id)).replace("{{POLL_SUMMARY}}", poll_summary)
+    body = body.replace("{{POLL_ID}}", html.escape(poll_id)).replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton())
     page = (read("src", "head.html").replace("{{BUILD_DATE}}", today) + "<style>" + read("src", "base.css") + read("src", "extra.css")
             + "</style>\n</head>\n<body>\n" + body
             + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\nconst MAP=" + read("data", "map.json") + ";\n"

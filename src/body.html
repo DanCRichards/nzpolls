@@ -31,16 +31,16 @@
   <!-- 1. Parliament -->
   <section class="chamber" id="houseSection" aria-labelledby="h-house">
     <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
-    <p class="hint" id="houseHint">Running simulations…</p>
+    <p class="hint" id="houseHint">Running simulated elections…</p>
     <div class="house">
       <div class="chamberwrap" id="chamberwrap">
-        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram"></svg>
+        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram">{{HEMI_SKELETON}}</svg>
         <div class="tip" id="tip" hidden></div>
         <label class="toggle"><input type="checkbox" id="showMps"> Show MP initials (hover or tap a seat for the name)</label>
       </div>
       <div>
-        <p class="verdict" id="verdict"></p>
-        <div class="odds" id="odds"></div>
+        <p class="verdict" id="verdict">Working out the most likely result…</p>
+        <div class="odds" id="odds"><div class="odd skel"><div class="big">…</div><div class="lab">National-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Labour-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Neither has a majority: kingmakers decide</div></div></div>
       </div>
     </div>
     <div class="blocs wide" id="blocs"></div>

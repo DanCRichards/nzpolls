@@ -1048,6 +1048,15 @@ function loading(on, frac, quick){
   if(!quick){ pill.hidden=false; const N=state.err===0?1:parseInt(document.getElementById("nsim").value,10);
     pill.innerHTML=`<span class="spin" aria-hidden="true"></span> ${state.err===0?"Recalculating":`Running ${N.toLocaleString()} simulations`} <b>${Math.round((frac||0)*100)}%</b>`; }
 }
+function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); }
+// On page load, draw a quick estimate first, then refine. The seed is fixed, so the quick runs are the first runs of the full set.
+async function firstLoad(){
+  const token=++SIMTOKEN, n=parseInt(document.getElementById("nsim").value,10);
+  loading(true,0.05,true);
+  if(await simulate(600,null,token)){ renderAll();
+    document.getElementById("houseHint").textContent=`Quick estimate from the first 600 simulated elections. Running all ${n.toLocaleString()} now…`; }
+  update();
+}
 function update(quick){
   clearTimeout(timer);
   const wrap=document.getElementById("chamberwrap"), sec=document.getElementById("simSection");
@@ -1060,7 +1069,7 @@ function update(quick){
     const ok=await simulate(quick?600:null, f=>loading(true,f,quick), token);
     if(!ok) return;
     loading(true,1,quick);
-    drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes();
+    renderAll();
     if(!quick){
       wrap.classList.remove("busy"); sec.classList.remove("busy");
       const after=snapshot(); if(statusEl) simStatus(statusEl.id,"done",deltaText(lastSnap,after,statusEl.id)); statusEl=null; lastSnap=null;
@@ -1091,7 +1100,7 @@ document.getElementById("simPanel").addEventListener("click",e=>{ if(e.target.id
   document.addEventListener("focusout",e=>{ if(e.target.closest("[data-tip]")) ft.hidden=true; });
   document.addEventListener("click",e=>{ const el=e.target.closest("[data-tip]"); if(el) show(el); else ft.hidden=true; });
 })();
-buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); update();
+buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); firstLoad();
 window.addEventListener("resize",()=>{ placeMaj(document.getElementById("blocs")); placeMaj(document.getElementById("dockBar")); });
 (function(){ const dock=document.getElementById("dock"), target=document.getElementById("hemi");
   const io=new IntersectionObserver(es=>es.forEach(e=>{ const on=!e.isIntersecting && e.boundingClientRect.top<0; dock.classList.toggle("on",on); dock.setAttribute("aria-hidden",!on); }),{threshold:0});

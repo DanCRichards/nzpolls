@@ -602,6 +602,13 @@ svg.seatmap.dragging{cursor:grabbing}
 .ctltitle{flex-basis:100%;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .latestpoll{margin-top:12px;font-size:.88rem;color:var(--muted);border-left:3px solid var(--chamber);padding:2px 0 2px 10px}
 .latestpoll b{color:var(--ink);font-weight:600}
+
+/* placeholders shown until the first simulation finishes */
+.hemi .skel{fill:var(--line);animation:skel 1.2s ease-in-out infinite alternate}
+.odd.skel{border-left:4px solid var(--line)}
+.odd.skel .big{color:var(--muted);animation:skel 1.2s ease-in-out infinite alternate}
+@keyframes skel{from{opacity:1}to{opacity:.45}}
+@media (prefers-reduced-motion: reduce){.hemi .skel,.odd.skel .big{animation:none}}
 </style>
 </head>
 <body>
@@ -638,16 +645,16 @@ svg.seatmap.dragging{cursor:grabbing}
   <!-- 1. Parliament -->
   <section class="chamber" id="houseSection" aria-labelledby="h-house">
     <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
-    <p class="hint" id="houseHint">Running simulations…</p>
+    <p class="hint" id="houseHint">Running simulated elections…</p>
     <div class="house">
       <div class="chamberwrap" id="chamberwrap">
-        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram"></svg>
+        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram"><circle class="skel" cx="138.0" cy="212.0" r="7.68"/><circle class="skel" cx="145.1" cy="180.8" r="7.68"/><circle class="skel" cx="165.1" cy="155.7" r="7.68"/><circle class="skel" cx="194.0" cy="141.8" r="7.68"/><circle class="skel" cx="226.0" cy="141.8" r="7.68"/><circle class="skel" cx="254.9" cy="155.7" r="7.68"/><circle class="skel" cx="274.9" cy="180.8" r="7.68"/><circle class="skel" cx="282.0" cy="212.0" r="7.68"/><circle class="skel" cx="119.7" cy="212.0" r="7.68"/><circle class="skel" cx="125.2" cy="181.1" r="7.68"/><circle class="skel" cx="140.8" cy="154.0" r="7.68"/><circle class="skel" cx="164.9" cy="133.8" r="7.68"/><circle class="skel" cx="194.3" cy="123.1" r="7.68"/><circle class="skel" cx="225.7" cy="123.1" r="7.68"/><circle class="skel" cx="255.1" cy="133.8" r="7.68"/><circle class="skel" cx="279.2" cy="154.0" r="7.68"/><circle class="skel" cx="294.8" cy="181.1" r="7.68"/><circle class="skel" cx="300.3" cy="212.0" r="7.68"/><circle class="skel" cx="101.4" cy="212.0" r="7.68"/><circle class="skel" cx="105.8" cy="181.4" r="7.68"/><circle class="skel" cx="118.7" cy="153.3" r="7.68"/><circle class="skel" cx="138.9" cy="129.9" r="7.68"/><circle class="skel" cx="164.9" cy="113.2" r="7.68"/><circle class="skel" cx="194.5" cy="104.5" r="7.68"/><circle class="skel" cx="225.5" cy="104.5" r="7.68"/><circle class="skel" cx="255.1" cy="113.2" r="7.68"/><circle class="skel" cx="281.1" cy="129.9" r="7.68"/><circle class="skel" cx="301.3" cy="153.3" r="7.68"/><circle class="skel" cx="314.2" cy="181.4" r="7.68"/><circle class="skel" cx="318.6" cy="212.0" r="7.68"/><circle class="skel" cx="83.1" cy="212.0" r="7.68"/><circle class="skel" cx="86.8" cy="181.6" r="7.68"/><circle class="skel" cx="97.7" cy="153.0" r="7.68"/><circle class="skel" cx="115.0" cy="127.9" r="7.68"/><circle class="skel" cx="137.9" cy="107.6" r="7.68"/><circle class="skel" cx="165.0" cy="93.4" r="7.68"/><circle class="skel" cx="194.7" cy="86.1" r="7.68"/><circle class="skel" cx="225.3" cy="86.1" r="7.68"/><circle class="skel" cx="255.0" cy="93.4" r="7.68"/><circle class="skel" cx="282.1" cy="107.6" r="7.68"/><circle class="skel" cx="305.0" cy="127.9" r="7.68"/><circle class="skel" cx="322.3" cy="153.0" r="7.68"/><circle class="skel" cx="333.2" cy="181.6" r="7.68"/><circle class="skel" cx="336.9" cy="212.0" r="7.68"/><circle class="skel" cx="64.9" cy="212.0" r="7.68"/><circle class="skel" cx="68.0" cy="181.8" r="7.68"/><circle class="skel" cx="77.4" cy="153.0" r="7.68"/><circle class="skel" cx="92.6" cy="126.7" r="7.68"/><circle class="skel" cx="112.9" cy="104.1" r="7.68"/><circle class="skel" cx="137.4" cy="86.3" r="7.68"/><circle class="skel" cx="165.1" cy="74.0" r="7.68"/><circle class="skel" cx="194.8" cy="67.7" r="7.68"/><circle class="skel" cx="225.2" cy="67.7" r="7.68"/><circle class="skel" cx="254.9" cy="74.0" r="7.68"/><circle class="skel" cx="282.6" cy="86.3" r="7.68"/><circle class="skel" cx="307.1" cy="104.1" r="7.68"/><circle class="skel" cx="327.4" cy="126.7" r="7.68"/><circle class="skel" cx="342.6" cy="153.0" r="7.68"/><circle class="skel" cx="352.0" cy="181.8" r="7.68"/><circle class="skel" cx="355.1" cy="212.0" r="7.68"/><circle class="skel" cx="46.6" cy="212.0" r="7.68"/><circle class="skel" cx="49.4" cy="182.0" r="7.68"/><circle class="skel" cx="57.6" cy="153.0" r="7.68"/><circle class="skel" cx="71.1" cy="126.0" r="7.68"/><circle class="skel" cx="89.2" cy="101.9" r="7.68"/><circle class="skel" cx="111.5" cy="81.6" r="7.68"/><circle class="skel" cx="137.2" cy="65.7" r="7.68"/><circle class="skel" cx="165.3" cy="54.8" r="7.68"/><circle class="skel" cx="194.9" cy="49.3" r="7.68"/><circle class="skel" cx="225.1" cy="49.3" r="7.68"/><circle class="skel" cx="254.7" cy="54.8" r="7.68"/><circle class="skel" cx="282.8" cy="65.7" r="7.68"/><circle class="skel" cx="308.5" cy="81.6" r="7.68"/><circle class="skel" cx="330.8" cy="101.9" r="7.68"/><circle class="skel" cx="348.9" cy="126.0" r="7.68"/><circle class="skel" cx="362.4" cy="153.0" r="7.68"/><circle class="skel" cx="370.6" cy="182.0" r="7.68"/><circle class="skel" cx="373.4" cy="212.0" r="7.68"/><circle class="skel" cx="28.3" cy="212.0" r="7.68"/><circle class="skel" cx="30.8" cy="182.1" r="7.68"/><circle class="skel" cx="38.1" cy="153.0" r="7.68"/><circle class="skel" cx="50.2" cy="125.5" r="7.68"/><circle class="skel" cx="66.6" cy="100.4" r="7.68"/><circle class="skel" cx="86.9" cy="78.3" r="7.68"/><circle class="skel" cx="110.6" cy="59.9" r="7.68"/><circle class="skel" cx="137.0" cy="45.6" r="7.68"/><circle class="skel" cx="165.4" cy="35.8" r="7.68"/><circle class="skel" cx="195.0" cy="30.9" r="7.68"/><circle class="skel" cx="225.0" cy="30.9" r="7.68"/><circle class="skel" cx="254.6" cy="35.8" r="7.68"/><circle class="skel" cx="283.0" cy="45.6" r="7.68"/><circle class="skel" cx="309.4" cy="59.9" r="7.68"/><circle class="skel" cx="333.1" cy="78.3" r="7.68"/><circle class="skel" cx="353.4" cy="100.4" r="7.68"/><circle class="skel" cx="369.8" cy="125.5" r="7.68"/><circle class="skel" cx="381.9" cy="153.0" r="7.68"/><circle class="skel" cx="389.2" cy="182.1" r="7.68"/><circle class="skel" cx="391.7" cy="212.0" r="7.68"/><circle class="skel" cx="10.0" cy="212.0" r="7.68"/><circle class="skel" cx="12.2" cy="182.2" r="7.68"/><circle class="skel" cx="18.9" cy="153.0" r="7.68"/><circle class="skel" cx="29.8" cy="125.2" r="7.68"/><circle class="skel" cx="44.8" cy="99.3" r="7.68"/><circle class="skel" cx="63.4" cy="76.0" r="7.68"/><circle class="skel" cx="85.3" cy="55.6" r="7.68"/><circle class="skel" cx="110.0" cy="38.8" r="7.68"/><circle class="skel" cx="136.9" cy="25.8" r="7.68"/><circle class="skel" cx="165.5" cy="17.0" r="7.68"/><circle class="skel" cx="195.1" cy="12.6" r="7.68"/><circle class="skel" cx="224.9" cy="12.6" r="7.68"/><circle class="skel" cx="254.5" cy="17.0" r="7.68"/><circle class="skel" cx="283.1" cy="25.8" r="7.68"/><circle class="skel" cx="310.0" cy="38.8" r="7.68"/><circle class="skel" cx="334.7" cy="55.6" r="7.68"/><circle class="skel" cx="356.6" cy="76.0" r="7.68"/><circle class="skel" cx="375.2" cy="99.3" r="7.68"/><circle class="skel" cx="390.2" cy="125.2" r="7.68"/><circle class="skel" cx="401.1" cy="153.0" r="7.68"/><circle class="skel" cx="407.8" cy="182.2" r="7.68"/><circle class="skel" cx="410.0" cy="212.0" r="7.68"/></svg>
         <div class="tip" id="tip" hidden></div>
         <label class="toggle"><input type="checkbox" id="showMps"> Show MP initials (hover or tap a seat for the name)</label>
       </div>
       <div>
-        <p class="verdict" id="verdict"></p>
-        <div class="odds" id="odds"></div>
+        <p class="verdict" id="verdict">Working out the most likely result…</p>
+        <div class="odds" id="odds"><div class="odd skel"><div class="big">…</div><div class="lab">National-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Labour-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Neither has a majority: kingmakers decide</div></div></div>
       </div>
     </div>
     <div class="blocs wide" id="blocs"></div>
@@ -2029,6 +2036,15 @@ function loading(on, frac, quick){
   if(!quick){ pill.hidden=false; const N=state.err===0?1:parseInt(document.getElementById("nsim").value,10);
     pill.innerHTML=`<span class="spin" aria-hidden="true"></span> ${state.err===0?"Recalculating":`Running ${N.toLocaleString()} simulations`} <b>${Math.round((frac||0)*100)}%</b>`; }
 }
+function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); }
+// On page load, draw a quick estimate first, then refine. The seed is fixed, so the quick runs are the first runs of the full set.
+async function firstLoad(){
+  const token=++SIMTOKEN, n=parseInt(document.getElementById("nsim").value,10);
+  loading(true,0.05,true);
+  if(await simulate(600,null,token)){ renderAll();
+    document.getElementById("houseHint").textContent=`Quick estimate from the first 600 simulated elections. Running all ${n.toLocaleString()} now…`; }
+  update();
+}
 function update(quick){
   clearTimeout(timer);
   const wrap=document.getElementById("chamberwrap"), sec=document.getElementById("simSection");
@@ -2041,7 +2057,7 @@ function update(quick){
     const ok=await simulate(quick?600:null, f=>loading(true,f,quick), token);
     if(!ok) return;
     loading(true,1,quick);
-    drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes();
+    renderAll();
     if(!quick){
       wrap.classList.remove("busy"); sec.classList.remove("busy");
       const after=snapshot(); if(statusEl) simStatus(statusEl.id,"done",deltaText(lastSnap,after,statusEl.id)); statusEl=null; lastSnap=null;
@@ -2072,7 +2088,7 @@ document.getElementById("simPanel").addEventListener("click",e=>{ if(e.target.id
   document.addEventListener("focusout",e=>{ if(e.target.closest("[data-tip]")) ft.hidden=true; });
   document.addEventListener("click",e=>{ const el=e.target.closest("[data-tip]"); if(el) show(el); else ft.hidden=true; });
 })();
-buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); update();
+buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); firstLoad();
 window.addEventListener("resize",()=>{ placeMaj(document.getElementById("blocs")); placeMaj(document.getElementById("dockBar")); });
 (function(){ const dock=document.getElementById("dock"), target=document.getElementById("hemi");
   const io=new IntersectionObserver(es=>es.forEach(e=>{ const on=!e.isIntersecting && e.boundingClientRect.top<0; dock.classList.toggle("on",on); dock.setAttribute("aria-hidden",!on); }),{threshold:0});
