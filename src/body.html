@@ -8,18 +8,24 @@
   </div>
 </div>
 <main>
-  <div class="top">
-    <div>
-      <h1>Who gets the seats?</h1>
-      <p class="sub">A seat forecast for New Zealand's 7 November 2026 election, built from the polls, 71 electorate contests and every party list.</p>
-    </div>
-    <div class="topctl">
-      <label class="inline">Party vote from <select id="scenario"></select></label>
-      <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
-        <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-      </label>
-      <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
-    </div>
+  <header class="intro">
+    <p class="eyebrow">New Zealand election · Saturday 7 November 2026<span id="daysLeft"></span></p>
+    <h1>Who gets the seats?</h1>
+    <p class="lede">This forecast plays out the election thousands of times to show the most likely Parliament and who could form a government.</p>
+    <ol class="introsteps">
+      <li><b>See the result.</b> The most likely Parliament is just below.</li>
+      <li><b>Try what-ifs.</b> Change the poll, Opportunity's vote or any electorate, and the forecast reruns.</li>
+      <li><b>Built from</b> <span id="introPoll">the latest poll ({{POLL_ID}})</span>, all 71 electorate races and every party list.</li>
+    </ol>
+    <p class="latestpoll">{{POLL_SUMMARY}}</p>
+  </header>
+  <div class="topctl" role="group" aria-label="Forecast settings">
+    <span class="ctltitle">Forecast settings</span>
+    <label class="inline">Party vote from <select id="scenario"></select></label>
+    <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
+      <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
+    </label>
+    <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
   </div>
 
   <!-- 1. Parliament -->

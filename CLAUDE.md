@@ -11,7 +11,7 @@ python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
 ```
 
-`build.py` checks `src/body.html` for unbalanced tags before building. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
+`build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_ID}}` and `{{POLL_SUMMARY}}` in `body.html` from the first entry in `POLLS` (so the latest poll is plain text for search engines and link previews) and `{{BUILD_DATE}}` in the JSON-LD in `head.html`. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
 
 ## Files
 
@@ -28,7 +28,8 @@ open dist/index.html   # no server needed; the page is fully self-contained
 | `data/map.json` | Generated. Embedded in the page as `const MAP`: SVG paths, label points and bounding boxes per electorate |
 | `data/boundaries/` | Map sources: Stats NZ 2026 electorate boundaries (CC BY 4.0) and a LINZ coastline (CC BY 3.0 NZ) |
 | `data/NZ_2026_Poll_Seat_Tracker.xlsx` | Companion spreadsheet: Sainte-Laguë seat calculator and poll log |
-| `dist/index.html` | Built output |
+| `static/` | `favicon.svg`, `apple-touch-icon.png` and `og.png` (the 1200×630 link-preview image). Copied into `dist/` by the build |
+| `dist/` | Built output: `index.html`, the `static/` files, and generated `robots.txt` and `sitemap.xml` |
 
 ## How it works
 
