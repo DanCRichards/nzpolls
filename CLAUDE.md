@@ -69,6 +69,7 @@ A pinned bar appears once the seat diagram scrolls off screen, with a mini diagr
 - Respect `prefers-reduced-motion` for any animation (confetti, smooth scrolling, spinners).
 - Opportunity status messages report Opportunity and overall odds only; National's card reports National's numbers.
 - Sources for stated party positions are linked inline in the text where they appear.
+- Analytics: Umami (script tag in `src/head.html`, counting only on nzpolls.co.nz). Events are mapped in one place, the analytics section at the end of `main.js`: add a selector or element id there for any new control rather than calling `track()` from handlers. Sliders report on `change` (release), never `input`.
 
 ## Data notes
 
