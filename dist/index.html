@@ -590,17 +590,15 @@ svg.seatmap.dragging{cursor:grabbing}
 .maplegend .lead{flex-basis:100%;color:var(--ink)}
 
 /* intro and settings */
-.intro{margin:4px 0 16px;max-width:68ch}
+.intro{margin:2px 0 14px;max-width:68ch}
 .eyebrow{font-size:.82rem;font-weight:600;color:var(--chamber);letter-spacing:.02em;margin-bottom:6px}
 .intro h1{margin-bottom:8px}
 .lede{font-size:1.08rem;line-height:1.45}
-.introsteps{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px;color:var(--muted);font-size:.93rem;counter-reset:is}
-.introsteps li{position:relative;padding-left:26px}
-.introsteps li::before{counter-increment:is;content:counter(is);position:absolute;left:0;top:1px;width:18px;height:18px;border-radius:50%;background:var(--chamber-soft);color:var(--chamber);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
-.introsteps b{color:var(--ink);font-weight:600}
-.topctl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px 12px;margin-bottom:16px}
-.ctltitle{flex-basis:100%;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.latestpoll{margin-top:12px;font-size:.88rem;color:var(--muted);border-left:3px solid var(--chamber);padding:2px 0 2px 10px}
+#houseSection .topctl{margin:4px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line)}
+.latestpoll{font-size:.85rem;color:var(--muted)}
+.coffee{font-size:.9rem;margin-top:8px}
+.coffee a{color:var(--chamber);font-weight:600}
 .latestpoll b{color:var(--ink);font-weight:600}
 
 /* placeholders shown until the first simulation finishes */
@@ -623,29 +621,22 @@ svg.seatmap.dragging{cursor:grabbing}
 </div>
 <main>
   <header class="intro">
-    <p class="eyebrow">New Zealand election · Saturday 7 November 2026<span id="daysLeft"></span></p>
+    <p class="eyebrow">NZ election · 7 November 2026<span id="daysLeft"></span></p>
     <h1>Who gets the seats?</h1>
-    <p class="lede">This forecast plays out the election thousands of times to show the most likely Parliament and who could form a government.</p>
-    <ol class="introsteps">
-      <li><b>See the result.</b> The most likely Parliament is just below.</li>
-      <li><b>Try what-ifs.</b> Change the poll, Opportunity's vote or any electorate, and the forecast reruns.</li>
-      <li><b>Built from</b> <span id="introPoll">the latest poll (1News–Verian, 8–12 Oct)</span>, all 71 electorate races and every party list.</li>
-    </ol>
-    <p class="latestpoll"><b>Latest poll</b> (1News–Verian, 8–12 Oct): National 28%, Labour 28%, Green 15%, ACT 10%, NZ First 10%, Opportunity 8%, Te Pāti Māori 0.4%.</p>
+    <p class="lede">Change the poll, Opportunity's vote or any electorate, and watch Parliament change.</p>
   </header>
-  <div class="topctl" role="group" aria-label="Forecast settings">
-    <span class="ctltitle">Forecast settings</span>
-    <label class="inline">Party vote from <select id="scenario"></select></label>
-    <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
-      <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-    </label>
-    <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
-  </div>
 
   <!-- 1. Parliament -->
   <section class="chamber" id="houseSection" aria-labelledby="h-house">
     <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
     <p class="hint" id="houseHint">Running simulated elections…</p>
+    <div class="topctl" role="group" aria-label="Forecast settings">
+      <label class="inline">Party vote from <select id="scenario"></select></label>
+      <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
+        <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
+      </label>
+      <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
+    </div>
     <div class="house">
       <div class="chamberwrap" id="chamberwrap">
         <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram"><circle class="skel" cx="138.0" cy="212.0" r="7.68"/><circle class="skel" cx="145.1" cy="180.8" r="7.68"/><circle class="skel" cx="165.1" cy="155.7" r="7.68"/><circle class="skel" cx="194.0" cy="141.8" r="7.68"/><circle class="skel" cx="226.0" cy="141.8" r="7.68"/><circle class="skel" cx="254.9" cy="155.7" r="7.68"/><circle class="skel" cx="274.9" cy="180.8" r="7.68"/><circle class="skel" cx="282.0" cy="212.0" r="7.68"/><circle class="skel" cx="119.7" cy="212.0" r="7.68"/><circle class="skel" cx="125.2" cy="181.1" r="7.68"/><circle class="skel" cx="140.8" cy="154.0" r="7.68"/><circle class="skel" cx="164.9" cy="133.8" r="7.68"/><circle class="skel" cx="194.3" cy="123.1" r="7.68"/><circle class="skel" cx="225.7" cy="123.1" r="7.68"/><circle class="skel" cx="255.1" cy="133.8" r="7.68"/><circle class="skel" cx="279.2" cy="154.0" r="7.68"/><circle class="skel" cx="294.8" cy="181.1" r="7.68"/><circle class="skel" cx="300.3" cy="212.0" r="7.68"/><circle class="skel" cx="101.4" cy="212.0" r="7.68"/><circle class="skel" cx="105.8" cy="181.4" r="7.68"/><circle class="skel" cx="118.7" cy="153.3" r="7.68"/><circle class="skel" cx="138.9" cy="129.9" r="7.68"/><circle class="skel" cx="164.9" cy="113.2" r="7.68"/><circle class="skel" cx="194.5" cy="104.5" r="7.68"/><circle class="skel" cx="225.5" cy="104.5" r="7.68"/><circle class="skel" cx="255.1" cy="113.2" r="7.68"/><circle class="skel" cx="281.1" cy="129.9" r="7.68"/><circle class="skel" cx="301.3" cy="153.3" r="7.68"/><circle class="skel" cx="314.2" cy="181.4" r="7.68"/><circle class="skel" cx="318.6" cy="212.0" r="7.68"/><circle class="skel" cx="83.1" cy="212.0" r="7.68"/><circle class="skel" cx="86.8" cy="181.6" r="7.68"/><circle class="skel" cx="97.7" cy="153.0" r="7.68"/><circle class="skel" cx="115.0" cy="127.9" r="7.68"/><circle class="skel" cx="137.9" cy="107.6" r="7.68"/><circle class="skel" cx="165.0" cy="93.4" r="7.68"/><circle class="skel" cx="194.7" cy="86.1" r="7.68"/><circle class="skel" cx="225.3" cy="86.1" r="7.68"/><circle class="skel" cx="255.0" cy="93.4" r="7.68"/><circle class="skel" cx="282.1" cy="107.6" r="7.68"/><circle class="skel" cx="305.0" cy="127.9" r="7.68"/><circle class="skel" cx="322.3" cy="153.0" r="7.68"/><circle class="skel" cx="333.2" cy="181.6" r="7.68"/><circle class="skel" cx="336.9" cy="212.0" r="7.68"/><circle class="skel" cx="64.9" cy="212.0" r="7.68"/><circle class="skel" cx="68.0" cy="181.8" r="7.68"/><circle class="skel" cx="77.4" cy="153.0" r="7.68"/><circle class="skel" cx="92.6" cy="126.7" r="7.68"/><circle class="skel" cx="112.9" cy="104.1" r="7.68"/><circle class="skel" cx="137.4" cy="86.3" r="7.68"/><circle class="skel" cx="165.1" cy="74.0" r="7.68"/><circle class="skel" cx="194.8" cy="67.7" r="7.68"/><circle class="skel" cx="225.2" cy="67.7" r="7.68"/><circle class="skel" cx="254.9" cy="74.0" r="7.68"/><circle class="skel" cx="282.6" cy="86.3" r="7.68"/><circle class="skel" cx="307.1" cy="104.1" r="7.68"/><circle class="skel" cx="327.4" cy="126.7" r="7.68"/><circle class="skel" cx="342.6" cy="153.0" r="7.68"/><circle class="skel" cx="352.0" cy="181.8" r="7.68"/><circle class="skel" cx="355.1" cy="212.0" r="7.68"/><circle class="skel" cx="46.6" cy="212.0" r="7.68"/><circle class="skel" cx="49.4" cy="182.0" r="7.68"/><circle class="skel" cx="57.6" cy="153.0" r="7.68"/><circle class="skel" cx="71.1" cy="126.0" r="7.68"/><circle class="skel" cx="89.2" cy="101.9" r="7.68"/><circle class="skel" cx="111.5" cy="81.6" r="7.68"/><circle class="skel" cx="137.2" cy="65.7" r="7.68"/><circle class="skel" cx="165.3" cy="54.8" r="7.68"/><circle class="skel" cx="194.9" cy="49.3" r="7.68"/><circle class="skel" cx="225.1" cy="49.3" r="7.68"/><circle class="skel" cx="254.7" cy="54.8" r="7.68"/><circle class="skel" cx="282.8" cy="65.7" r="7.68"/><circle class="skel" cx="308.5" cy="81.6" r="7.68"/><circle class="skel" cx="330.8" cy="101.9" r="7.68"/><circle class="skel" cx="348.9" cy="126.0" r="7.68"/><circle class="skel" cx="362.4" cy="153.0" r="7.68"/><circle class="skel" cx="370.6" cy="182.0" r="7.68"/><circle class="skel" cx="373.4" cy="212.0" r="7.68"/><circle class="skel" cx="28.3" cy="212.0" r="7.68"/><circle class="skel" cx="30.8" cy="182.1" r="7.68"/><circle class="skel" cx="38.1" cy="153.0" r="7.68"/><circle class="skel" cx="50.2" cy="125.5" r="7.68"/><circle class="skel" cx="66.6" cy="100.4" r="7.68"/><circle class="skel" cx="86.9" cy="78.3" r="7.68"/><circle class="skel" cx="110.6" cy="59.9" r="7.68"/><circle class="skel" cx="137.0" cy="45.6" r="7.68"/><circle class="skel" cx="165.4" cy="35.8" r="7.68"/><circle class="skel" cx="195.0" cy="30.9" r="7.68"/><circle class="skel" cx="225.0" cy="30.9" r="7.68"/><circle class="skel" cx="254.6" cy="35.8" r="7.68"/><circle class="skel" cx="283.0" cy="45.6" r="7.68"/><circle class="skel" cx="309.4" cy="59.9" r="7.68"/><circle class="skel" cx="333.1" cy="78.3" r="7.68"/><circle class="skel" cx="353.4" cy="100.4" r="7.68"/><circle class="skel" cx="369.8" cy="125.5" r="7.68"/><circle class="skel" cx="381.9" cy="153.0" r="7.68"/><circle class="skel" cx="389.2" cy="182.1" r="7.68"/><circle class="skel" cx="391.7" cy="212.0" r="7.68"/><circle class="skel" cx="10.0" cy="212.0" r="7.68"/><circle class="skel" cx="12.2" cy="182.2" r="7.68"/><circle class="skel" cx="18.9" cy="153.0" r="7.68"/><circle class="skel" cx="29.8" cy="125.2" r="7.68"/><circle class="skel" cx="44.8" cy="99.3" r="7.68"/><circle class="skel" cx="63.4" cy="76.0" r="7.68"/><circle class="skel" cx="85.3" cy="55.6" r="7.68"/><circle class="skel" cx="110.0" cy="38.8" r="7.68"/><circle class="skel" cx="136.9" cy="25.8" r="7.68"/><circle class="skel" cx="165.5" cy="17.0" r="7.68"/><circle class="skel" cx="195.1" cy="12.6" r="7.68"/><circle class="skel" cx="224.9" cy="12.6" r="7.68"/><circle class="skel" cx="254.5" cy="17.0" r="7.68"/><circle class="skel" cx="283.1" cy="25.8" r="7.68"/><circle class="skel" cx="310.0" cy="38.8" r="7.68"/><circle class="skel" cx="334.7" cy="55.6" r="7.68"/><circle class="skel" cx="356.6" cy="76.0" r="7.68"/><circle class="skel" cx="375.2" cy="99.3" r="7.68"/><circle class="skel" cx="390.2" cy="125.2" r="7.68"/><circle class="skel" cx="401.1" cy="153.0" r="7.68"/><circle class="skel" cx="407.8" cy="182.2" r="7.68"/><circle class="skel" cx="410.0" cy="212.0" r="7.68"/></svg>
@@ -920,7 +911,11 @@ svg.seatmap.dragging{cursor:grabbing}
     <div class="presets" style="margin-top:10px"><button class="btn primary" id="addBloc">Add a bloc</button></div>
   </section>
 
-  <p class="note" style="margin-top:20px">Polls to 13 Oct 2026 (latest: 1News–Verian, 8–12 Oct). Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
+  <footer class="foot">
+    <p class="latestpoll"><b>Latest poll</b> (1News–Verian, 8–12 Oct): National 28%, Labour 28%, Green 15%, ACT 10%, NZ First 10%, Opportunity 8%, Te Pāti Māori 0.4%.</p>
+    <p class="coffee">Made by Dan Richards. If it's useful, you can <a href="https://buymeacoffee.com/danrichards" target="_blank" rel="noopener">buy me a coffee</a>.</p>
+  <p class="note" style="margin-top:20px">Polls to 13 Oct 2026. Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
+  </footer>
 </main>
 <div class="ftip" id="ftip" role="tooltip" hidden></div>
 <dialog id="simPanel" class="dlg" aria-labelledby="simPanelTitle">
@@ -2145,5 +2140,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
 })();
 
 </script>
+<!-- Buy Me a Coffee floating button. Loaded after the forecast script so it never delays the first result. -->
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="danrichards" data-description="Support nzpolls on Buy Me a Coffee" data-message="" data-color="#1E5B4A" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 </body>
 </html>

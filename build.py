@@ -66,13 +66,13 @@ def main():
         sys.exit("body.html structure problem:\n  " + "\n  ".join(check.errors or [f"unclosed {check.stack[-5:]}"]))
     json.loads(read("data", "data.json"))  # fail early on bad data
     json.loads(read("data", "map.json"))
-    poll_id, poll_summary = latest_poll()
+    _, poll_summary = latest_poll()
     today = datetime.date.today().isoformat()
-    body = body.replace("{{POLL_ID}}", html.escape(poll_id)).replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton())
+    body = body.replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton())
     page = (read("src", "head.html").replace("{{BUILD_DATE}}", today) + "<style>" + read("src", "base.css") + read("src", "extra.css")
             + "</style>\n</head>\n<body>\n" + body
             + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\nconst MAP=" + read("data", "map.json") + ";\n"
-            + read("src", "head.js") + read("src", "main.js") + "\n</script>\n</body>\n</html>\n")
+            + read("src", "head.js") + read("src", "main.js") + "\n</script>\n" + read("src", "foot.html") + "</body>\n</html>\n")
     os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
     open(os.path.join(ROOT, "dist", "index.html"), "w", encoding="utf-8").write(page)
     # icons, share image, robots.txt and sitemap.xml sit next to the page
