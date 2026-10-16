@@ -1048,6 +1048,15 @@ function loading(on, frac, quick){
   if(!quick){ pill.hidden=false; const N=state.err===0?1:parseInt(document.getElementById("nsim").value,10);
     pill.innerHTML=`<span class="spin" aria-hidden="true"></span> ${state.err===0?"Recalculating":`Running ${N.toLocaleString()} simulations`} <b>${Math.round((frac||0)*100)}%</b>`; }
 }
+// Phones only: a small pill at the bottom pointing to the simulation controls, until the visitor scrolls.
+const scrollCue=(()=>{ const el=document.getElementById("scrollCue"), phone=matchMedia("(max-width:760px)"); let done=false;
+  const hide=()=>{ if(done) return; done=true; el.classList.remove("on"); setTimeout(()=>el.hidden=true,300); removeEventListener("scroll",onScroll); };
+  const onScroll=()=>{ if(scrollY>40) hide(); };
+  addEventListener("scroll",onScroll,{passive:true});
+  el.onclick=()=>{ document.getElementById("simSection").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}); hide(); };
+  return {show:()=>{ if(done||!phone.matches||scrollY>40) return; el.hidden=false; requestAnimationFrame(()=>el.classList.add("on")); }};
+})();
+function showScrollCue(){ scrollCue.show(); }
 function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); }
 // On page load, draw a quick estimate first, then refine. The seed is fixed, so the quick runs are the first runs of the full set.
 async function firstLoad(){
@@ -1074,7 +1083,7 @@ function update(quick){
       wrap.classList.remove("busy"); sec.classList.remove("busy");
       const after=snapshot(); if(statusEl) simStatus(statusEl.id,"done",deltaText(lastSnap,after,statusEl.id)); statusEl=null; lastSnap=null;
       celebrate();
-      setTimeout(()=>loading(false),250);
+      setTimeout(()=>{ loading(false); showScrollCue(); },250);
     } else loading(false);
   }, quick?40:150);
 }
@@ -1128,6 +1137,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
     [".lvbtn", b=>b.getAttribute("aria-expanded")==="false"?["Open card",{card:b.dataset.open}]:null],
     ["#listParty button", b=>["Party list",{party:NAMES[b.dataset.p]}]],
     ["#listMore", ()=>["Full party list"]],
+    ["#scrollCue", ()=>["Scroll cue"]],
     ["#customPresets button", b=>["Add custom bloc",{bloc:txt(b)}]],
     ["#addBloc", ()=>["Add custom bloc",{bloc:"blank"}]],
     [".pseg", g=>["Party bar",{party:NAMES[g.dataset.p]}]],

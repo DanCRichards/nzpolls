@@ -67,6 +67,8 @@ Above it, a short intro (date and countdown, title, one line). Keep it short so 
 
 A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
 
+On phones only, a small "Change the forecast" pill (`#scrollCue`) appears at the bottom after the first full result, until the visitor scrolls; tapping it scrolls to the simulation section.
+
 ## Conventions
 
 - Plain sentence case in all text. Party names in full in prose; codes only in tight labels.

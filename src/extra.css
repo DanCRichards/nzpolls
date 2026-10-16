@@ -464,3 +464,16 @@ svg.seatmap.dragging{cursor:grabbing}
 .odd.skel .big{color:var(--muted);animation:skel 1.2s ease-in-out infinite alternate}
 @keyframes skel{from{opacity:1}to{opacity:.45}}
 @media (prefers-reduced-motion: reduce){.hemi .skel,.odd.skel .big{animation:none}}
+
+/* phone-only cue pointing down to the controls, shown until the visitor scrolls */
+.scrollcue{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:15;display:flex;align-items:center;gap:6px;
+  padding:7px 13px 7px 15px;border:1px solid var(--line);border-radius:999px;cursor:pointer;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  color:var(--ink);font-size:.84rem;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.10);
+  opacity:0;transform:translate(-50%,10px);transition:opacity .35s ease,transform .35s ease}
+.scrollcue.on{opacity:1;transform:translate(-50%,0)}
+.scrollcue[hidden]{display:none}
+.scrollcue svg{color:var(--chamber);animation:cuebob 1.8s ease-in-out infinite}
+@keyframes cuebob{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@media (min-width:761px){.scrollcue{display:none}}
+@media (prefers-reduced-motion: reduce){.scrollcue{transition:none}.scrollcue svg{animation:none}}
