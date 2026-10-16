@@ -11,7 +11,7 @@ python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
 ```
 
-`build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_ID}}` and `{{POLL_SUMMARY}}` in `body.html` from the first entry in `POLLS` (so the latest poll is plain text for search engines and link previews) and `{{BUILD_DATE}}` in the JSON-LD in `head.html`. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
+`build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_SUMMARY}}` (the footer's latest-poll line) in `body.html` from the first entry in `POLLS`, so the latest poll is plain text for search engines and link previews, and `{{BUILD_DATE}}` in the JSON-LD in `head.html`. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
 
 ## Files
 
@@ -20,6 +20,7 @@ open dist/index.html   # no server needed; the page is fully self-contained
 | `src/head.html` | Doctype, meta tags and title, up to the opening `<style>` |
 | `src/base.css`, `src/extra.css` | All styles. Colours are CSS variables on `:root` with dark-mode values; party colours are `--NAT`, `--LAB`, `--GRN`, `--ACT`, `--NZF`, `--TPM`, `--OPP`, `--OTH` |
 | `src/body.html` | All page markup |
+| `src/foot.html` | Third-party scripts loaded after the forecast script: the Buy Me a Coffee floating button |
 | `src/head.js` | Constants: `POLLS` (with fieldwork midpoints), `AVG`, `PARTIES`, `TREND` (late-swing slopes), `SPECIALS`, lookup indexes |
 | `src/main.js` | Everything else: state, seat model, simulation, rendering, controls |
 | `data/data.py` | Source of truth for the 71 electorates (candidates, starting weights, notes) and every party list. Writes `data/data.json` |
@@ -46,13 +47,17 @@ open dist/index.html   # no server needed; the page is fully self-contained
 
 The random seed is fixed, so identical inputs give identical results. That's deliberate: differences you see come only from what changed.
 
+**Page load:** `firstLoad()` runs 600 simulations, draws them with `renderAll()`, then calls `update()` for the full count. Because the seed is fixed, the quick runs are the first runs of the full set. Before any script runs, the seat diagram shows a grey placeholder that `build.py` writes into `{{HEMI_SKELETON}}` (same layout as `seatPositions()`), with placeholder odds cards in `body.html`.
+
 **Results (`state.sim`)** are typed arrays with one slot per run: seats per party, independent seats, House size, outcome (0 National-led majority, 1 Labour-led, 2 neither), factor flags, per-candidate seat wins (`seatWin`), and per-rank list entries (`listIn`). Every percentage on the page is a count from these. Custom blocs reuse them, so they update without a rerun.
 
 **`sim.rep` is the Parliament drawn on screen:** the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.
 
 ## Page sections
 
-1. **Most likely Parliament:** seat diagram with a majority outline, odds cards, party bar with hover MP lists, and a collapsible detail table.
+Above it, a short intro (date and countdown, title, one line). Keep it short so the seat diagram is on the first screen on a phone.
+
+1. **Most likely Parliament:** the poll and simulation controls, then the seat diagram with a majority outline, odds cards, party bar with hover MP lists, and a collapsible detail table.
 2. **Simulation:** intro and reset, then cards for Opportunity (side, vote with direct and squeeze modes, impact), National's overhang (bars, list table under More info), polling error, Te Pāti Māori, breakaway MPs and late swing.
 3. **Electorate seats:** a List / Map switch. The list shows cards with simulated chances, rating pills and calls. The map (general or Māori electorates) colours each seat by who's ahead, with the shade set by the same rating as the pills and stripes for toss-ups; selecting a seat shows its card. Map state lives in `MAPV` (`main.js`), and `paintMap()` runs after every simulation.
 4. **Party list outcome.**
@@ -61,6 +66,8 @@ The random seed is fixed, so identical inputs give identical results. That's del
 7. **Custom blocs:** saved in localStorage under `nzSeatForecast.customBlocs.v1`.
 
 A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
+
+On phones only, a small "Change the forecast" pill (`#scrollCue`) appears at the bottom after the first full result, until the visitor scrolls; tapping it scrolls to the simulation section.
 
 ## Conventions
 

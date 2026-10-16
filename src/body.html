@@ -7,40 +7,34 @@
     <button class="dockreset" id="dockReset" title="Reset everything to the latest poll">Reset</button>
   </div>
 </div>
+<button class="scrollcue" id="scrollCue" type="button" hidden>Change the forecast <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <main>
   <header class="intro">
-    <p class="eyebrow">New Zealand election · Saturday 7 November 2026<span id="daysLeft"></span></p>
+    <p class="eyebrow">NZ election · 7 November 2026<span id="daysLeft"></span></p>
     <h1>Who gets the seats?</h1>
-    <p class="lede">This forecast plays out the election thousands of times to show the most likely Parliament and who could form a government.</p>
-    <ol class="introsteps">
-      <li><b>See the result.</b> The most likely Parliament is just below.</li>
-      <li><b>Try what-ifs.</b> Change the poll, Opportunity's vote or any electorate, and the forecast reruns.</li>
-      <li><b>Built from</b> <span id="introPoll">the latest poll ({{POLL_ID}})</span>, all 71 electorate races and every party list.</li>
-    </ol>
-    <p class="latestpoll">{{POLL_SUMMARY}}</p>
+    <p class="lede">Change the poll, Opportunity's vote or any electorate, and watch Parliament change.</p>
   </header>
-  <div class="topctl" role="group" aria-label="Forecast settings">
-    <span class="ctltitle">Forecast settings</span>
-    <label class="inline">Party vote from <select id="scenario"></select></label>
-    <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
-      <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
-    </label>
-    <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
-  </div>
 
   <!-- 1. Parliament -->
   <section class="chamber" id="houseSection" aria-labelledby="h-house">
     <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
-    <p class="hint" id="houseHint">Running simulations…</p>
+    <p class="hint" id="houseHint">Running simulated elections…</p>
+    <div class="topctl" role="group" aria-label="Forecast settings">
+      <label class="inline">Party vote from <select id="scenario"></select></label>
+      <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
+        <select id="nsim"><option value="1000">1,000</option><option value="5000" selected>5,000</option><option value="20000">20,000</option><option value="50000">50,000</option></select>
+      </label>
+      <label class="switch topswitch"><input type="checkbox" id="simAll" checked><span class="track" aria-hidden="true"></span> Simulations on</label>
+    </div>
     <div class="house">
       <div class="chamberwrap" id="chamberwrap">
-        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram"></svg>
+        <svg class="hemi" id="hemi" viewBox="-8 -6 436 254" role="img" aria-label="Seat diagram">{{HEMI_SKELETON}}</svg>
         <div class="tip" id="tip" hidden></div>
         <label class="toggle"><input type="checkbox" id="showMps"> Show MP initials (hover or tap a seat for the name)</label>
       </div>
       <div>
-        <p class="verdict" id="verdict"></p>
-        <div class="odds" id="odds"></div>
+        <p class="verdict" id="verdict">Working out the most likely result…</p>
+        <div class="odds" id="odds"><div class="odd skel"><div class="big">…</div><div class="lab">National-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Labour-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Neither has a majority: kingmakers decide</div></div></div>
       </div>
     </div>
     <div class="blocs wide" id="blocs"></div>
@@ -306,7 +300,11 @@
     <div class="presets" style="margin-top:10px"><button class="btn primary" id="addBloc">Add a bloc</button></div>
   </section>
 
-  <p class="note" style="margin-top:20px">Polls to 13 Oct 2026 (latest: 1News–Verian, 8–12 Oct). Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
+  <footer class="foot">
+    <p class="latestpoll">{{POLL_SUMMARY}}</p>
+    <p class="coffee">Made by Dan Richards. If it's useful, you can <a href="https://buymeacoffee.com/danrichards" target="_blank" rel="noopener">buy me a coffee</a>.</p>
+  <p class="note" style="margin-top:20px">Polls to 13 Oct 2026. Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
+  </footer>
 </main>
 <div class="ftip" id="ftip" role="tooltip" hidden></div>
 <dialog id="simPanel" class="dlg" aria-labelledby="simPanelTitle">
