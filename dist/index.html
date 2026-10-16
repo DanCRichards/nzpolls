@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script defer src="https://cloud.umami.is/script.js" data-website-id="7e104de8-5968-4696-813b-6d6dcdeaddfa" data-domains="nzpolls.co.nz,www.nzpolls.co.nz"></script>
 <style>
 :root{
   --bg:#F3F6F4; --surface:#FFFFFF; --ink:#16212B; --muted:#5E6B76; --line:#D6DDDA;
@@ -1665,6 +1666,7 @@ function drawMapSide(){
     <p style="margin-top:10px">Who's ahead in the ${set.length} ${MAPV.set==="general"?"general":"Māori"} electorates:</p><ul class="tally">${rows}</ul></div>`;
 }
 function selectSeat(i, zoom){
+  track("Map electorate",{electorate:ESEATS[i].n});
   const set=ESEATS[i].m?"maori":"general";
   if(set!==MAPV.set){ MAPV.set=set; document.querySelectorAll("#mapSet button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.m===set)); }
   MAPV.sel=i; paintMap();
@@ -2036,6 +2038,56 @@ window.addEventListener("resize",()=>{ placeMaj(document.getElementById("blocs")
 (function(){ const dock=document.getElementById("dock"), target=document.getElementById("hemi");
   const io=new IntersectionObserver(es=>es.forEach(e=>{ const on=!e.isIntersecting && e.boundingClientRect.top<0; dock.classList.toggle("on",on); dock.setAttribute("aria-hidden",!on); }),{threshold:0});
   io.observe(target); })();
+
+/* ---------- analytics ---------- */
+// Umami (loaded in head.html, counts only on nzpolls.co.nz). One listener maps controls to named events,
+// so tracking never touches the forecast logic. Sliders report on release, not while dragging.
+function track(name,data){ try{ if(window.umami) window.umami.track(name,data); }catch(e){} }
+(function(){
+  const txt=el=>el.textContent.trim().replace(/\s+/g," ").slice(0,60);
+  const on=(sel,el)=>el.closest&&el.closest(sel);
+  const CLICK=[
+    ["#seatView button", b=>["Electorate view",{view:b.dataset.v}]],
+    ["#mapSet button", b=>["Map electorates",{set:b.dataset.m}]],
+    ["#mapRegions button", b=>["Map zoom",{area:txt(b)}]],
+    [".cand", b=>{ const i=+b.dataset.s, j=+b.dataset.c, c=ESEATS[i].c[j]; return ["Call seat",{electorate:ESEATS[i].n, candidate:c.nm, party:plab(c), action:state.locks[i]===j?"uncall":"call"}]; }],
+    ["#presets button", b=>["Seat preset",{preset:txt(b)}]],
+    ["#clearLocks", ()=>["Clear calls"]],
+    ["#oppSide button", b=>["Opportunity side",{side:BLOCS[b.dataset.b]}]],
+    ["#oppMode button", b=>["Opportunity vote mode",{mode:b.dataset.m}]],
+    ["#errSeg button", b=>["Polling error",{level:txt(b)}]],
+    ["#sides .sideseg button", b=>["Bloc change",{party:NAMES[b.dataset.p], bloc:BLOCS[b.dataset.b]}]],
+    ["#resetLevers, #dockReset", b=>["Reset",{from:b.id==="dockReset"?"pinned bar":"simulation"}]],
+    [".lvbtn", b=>b.getAttribute("aria-expanded")==="false"?["Open card",{card:b.dataset.open}]:null],
+    ["#listParty button", b=>["Party list",{party:NAMES[b.dataset.p]}]],
+    ["#listMore", ()=>["Full party list"]],
+    ["#customPresets button", b=>["Add custom bloc",{bloc:txt(b)}]],
+    ["#addBloc", ()=>["Add custom bloc",{bloc:"blank"}]],
+    [".pseg", g=>["Party bar",{party:NAMES[g.dataset.p]}]],
+    [".pop [data-go]", b=>["Popup button",{button:txt(b)}]],
+    ['a[href^="http"]', a=>["Outbound link",{url:a.hostname+a.pathname}]],
+  ];
+  document.addEventListener("click",e=>{ for(const [sel,f] of CLICK){ const el=on(sel,e.target); if(el){ const r=f(el); if(r) track(r[0],r[1]); return; } } },true);
+  const v=id=>document.getElementById(id);
+  const CHANGE={
+    scenario:()=>["Poll",{poll:v("scenario").selectedOptions[0].textContent}],
+    nsim:()=>["Simulation count",{runs:v("nsim").value}],
+    simAll:()=>["Simulations switch",{on:v("simAll").checked}],
+    simSeats:()=>["Simulate electorates switch",{on:v("simSeats").checked}],
+    corr:()=>["Correlated error switch",{on:v("corr").checked}],
+    oppVote:()=>["Opportunity vote",{vote:+v("oppVote").value}],
+    squeeze:()=>["Opportunity squeeze",{percent:+v("squeeze").value}],
+    split:()=>["National split ticket",{points:+v("split").value}],
+    trend:()=>["Late swing",{percent:+v("trend").value}],
+    seatFilter:()=>["Seat filter",{filter:v("seatFilter").selectedOptions[0].textContent}],
+    vparty:()=>["Extra votes party",{party:NAMES[v("vparty").value]}],
+    showMps:()=>["Show MP initials",{on:v("showMps").checked}],
+  };
+  document.addEventListener("change",e=>{ const t=e.target; if(CHANGE[t.id]){ const r=CHANGE[t.id](); track(r[0],r[1]); }
+    else if(on("#votes",t)) track("Party vote edit",{party:NAMES[t.dataset.p]}); },true);
+  document.addEventListener("toggle",e=>{ const d=e.target; if(!d.open) return;
+    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); },true);
+})();
 
 </script>
 </body>
