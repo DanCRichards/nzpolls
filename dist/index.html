@@ -3,8 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NZ 2026 election seat forecast</title>
-<meta name="description" content="Who gets the seats? A simulation-based forecast of New Zealand's 7 November 2026 election: the most likely Parliament, who could govern, every electorate and every party list.">
+<title>NZ election 2026: seat forecast and poll tracker</title>
+<meta name="description" content="NZ election 2026 seat forecast and poll tracker: the most likely Parliament, who could govern, all 71 electorates and every party list, from the latest polls.">
+<link rel="canonical" href="https://nzpolls.co.nz/">
+<meta name="theme-color" content="#1E5B4A">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="nzpolls">
+<meta property="og:locale" content="en_NZ">
+<meta property="og:url" content="https://nzpolls.co.nz/">
+<meta property="og:title" content="Who gets the seats? NZ election 2026 forecast">
+<meta property="og:description" content="Thousands of simulated elections from the latest polls, all 71 electorates and every party list. Try your own what-ifs.">
+<meta property="og:image" content="https://nzpolls.co.nz/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Who gets the seats? New Zealand election, 7 November 2026. nzpolls.co.nz">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"NZ election 2026: seat forecast and poll tracker","url":"https://nzpolls.co.nz/","description":"Seat forecast and poll tracker for New Zealand's 7 November 2026 general election.","inLanguage":"en-NZ","dateModified":"2026-10-16","image":"https://nzpolls.co.nz/og.png","isPartOf":{"@type":"WebSite","name":"nzpolls","url":"https://nzpolls.co.nz/"},"about":{"@type":"Event","name":"2026 New Zealand general election","startDate":"2026-11-07","eventStatus":"https://schema.org/EventScheduled","eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","location":{"@type":"Country","name":"New Zealand"}}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -584,6 +600,8 @@ svg.seatmap.dragging{cursor:grabbing}
 .introsteps b{color:var(--ink);font-weight:600}
 .topctl{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px 12px;margin-bottom:16px}
 .ctltitle{flex-basis:100%;font-size:.78rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.latestpoll{margin-top:12px;font-size:.88rem;color:var(--muted);border-left:3px solid var(--chamber);padding:2px 0 2px 10px}
+.latestpoll b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -604,8 +622,9 @@ svg.seatmap.dragging{cursor:grabbing}
     <ol class="introsteps">
       <li><b>See the result.</b> The most likely Parliament is just below.</li>
       <li><b>Try what-ifs.</b> Change the poll, Opportunity's vote or any electorate, and the forecast reruns.</li>
-      <li><b>Built from</b> <span id="introPoll">the latest poll</span>, all 71 electorate races and every party list.</li>
+      <li><b>Built from</b> <span id="introPoll">the latest poll (1News–Verian, 8–12 Oct)</span>, all 71 electorate races and every party list.</li>
     </ol>
+    <p class="latestpoll"><b>Latest poll</b> (1News–Verian, 8–12 Oct): National 28%, Labour 28%, Green 15%, ACT 10%, NZ First 10%, Opportunity 8%, Te Pāti Māori 0.4%.</p>
   </header>
   <div class="topctl" role="group" aria-label="Forecast settings">
     <span class="ctltitle">Forecast settings</span>
@@ -1901,8 +1920,7 @@ function drawVotes(){
 /* ---------- controls ---------- */
 function buildControls(){
   { const now=new Date(), d=Math.round((new Date(2026,10,7)-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/864e5);
-    document.getElementById("daysLeft").textContent= d>1?` · ${d} days to go`: d===1?" · tomorrow": d===0?" · today":"";
-    document.getElementById("introPoll").textContent=`the latest poll (${POLLS[0].id})`; }
+    document.getElementById("daysLeft").textContent= d>1?` · ${d} days to go`: d===1?" · tomorrow": d===0?" · today":""; }
   const sel=document.getElementById("scenario");
   sel.innerHTML=`<option value="0">Latest poll: ${POLLS[0].id}</option><option value="avg">Average of ${POLLS.filter(p=>p.inc).length} polls since 1 Sep</option><optgroup label="Earlier polls">`+POLLS.slice(1).map((p,i)=>`<option value="${i+1}">${p.id}</option>`).join("")+`</optgroup>`+`<option value="custom" disabled>Custom (edited)</option>`;
   sel.onchange=()=>{ state.shares={...(sel.value==="avg"?AVG:POLLS[+sel.value].s)}; state.pollBase={...state.shares}; state.pollName=sel.value==="avg"?"Poll average":POLLS[+sel.value].id; syncVotes(); syncLevers(); update(); };
