@@ -1163,5 +1163,5 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
   document.addEventListener("change",e=>{ const t=e.target; if(CHANGE[t.id]){ const r=CHANGE[t.id](); track(r[0],r[1]); }
     else if(on("#votes",t)) track("Party vote edit",{party:NAMES[t.dataset.p]}); },true);
   document.addEventListener("toggle",e=>{ const d=e.target; if(!d.open) return;
-    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); },true);
+    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); },true);
 })();

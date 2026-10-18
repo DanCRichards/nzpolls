@@ -9,8 +9,9 @@
 </div>
 <button class="scrollcue" id="scrollCue" type="button" hidden>Change the forecast <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 <main>
+  <noscript><p class="note">This forecast runs its simulations in your browser, so it needs JavaScript turned on.</p></noscript>
   <header class="intro">
-    <p class="eyebrow">NZ election · 7 November 2026<span id="daysLeft"></span></p>
+    <p class="eyebrow">NZ election 2026 · Saturday 7 November<span id="daysLeft"></span></p>
     <h1>Who gets the seats?</h1>
     <p class="lede">Change the poll, Opportunity's vote or any electorate, and watch Parliament change.</p>
   </header>
@@ -300,10 +301,15 @@
     <div class="presets" style="margin-top:10px"><button class="btn primary" id="addBloc">Add a bloc</button></div>
   </section>
 
+  <details class="faq" id="faq">
+    <summary>Questions about the 2026 election and this forecast</summary>
+{{FAQ_HTML}}
+  </details>
+
   <footer class="foot">
     <p class="latestpoll">{{POLL_SUMMARY}}</p>
     <p class="coffee">Made by Dan Richards. If it's useful, you can <a href="https://buymeacoffee.com/danrichards" target="_blank" rel="noopener">buy me a coffee</a>.</p>
-  <p class="note" style="margin-top:20px">Polls to 13 Oct 2026. Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
+  <p class="note" style="margin-top:20px">Polls to 16 Oct 2026 (latest fieldwork 8–12 Oct). Candidates and lists from the Electoral Commission's 9 Oct release, via Wikipedia. Seats use the Sainte-Laguë formula over 120 seats; overhang seats are added on top. Te Pāti Māori's list has one name, so list entitlement beyond that is left vacant. Electorate chances are estimates, and the whole page illustrates uncertainty rather than predicting a result.</p>
   </footer>
 </main>
 <div class="ftip" id="ftip" role="tooltip" hidden></div>
