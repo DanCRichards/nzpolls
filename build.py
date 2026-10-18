@@ -45,6 +45,62 @@ def latest_poll():
     return m.group(1), f"<b>Latest poll</b> ({html.escape(m.group(1))}): {html.escape(summary)}."
 
 
+def faq():
+    """Questions people search for, answered from the data files. Rendered as HTML and as FAQPage structured data."""
+    js = read("src", "head.js")
+    seats = json.loads(read("data", "data.json"))["seats"]
+    n, maori = len(seats), sum(1 for x in seats if x["m"])
+    house = int(re.search(r"SEATS = (\d+)", js).group(1))
+    pollsters = list(dict.fromkeys(re.findall(r'\{id:"([^",]+)', js)))
+    latest = re.search(r'const POLLS = \[\s*\{id:"([^"]+)"', js).group(1)
+    return [
+        ("When is the 2026 New Zealand election?", "Saturday 7 November 2026."),
+        ("How many seats does a party or coalition need to govern?",
+         f"A majority of the House: {house // 2 + 1} of the usual {house} seats. Overhang seats make the House bigger, which raises "
+         "the number needed, so the forecast checks the majority line in every simulated Parliament."),
+        ("What is the 5% threshold?",
+         "A party gets list seats only if it wins at least 5% of the party vote or at least one electorate. Below that, its votes "
+         f"don't turn into seats, and the other parties share the {house} seats between them."),
+        ("What is an overhang?",
+         "When a party wins more electorates than its party vote entitles it to, it keeps them all and Parliament grows by the "
+         "difference. Those extra seats are the overhang."),
+        ("How many electorates are there in 2026?",
+         f"{n} electorates: {n - maori} general and {maori} Māori, on the boundaries the Representation Commission set in 2025."),
+        ("Which polls does this forecast use?",
+         f"Published national polls from {', '.join(pollsters[:-1])} and {pollsters[-1]}. The latest is {latest}. You can switch "
+         "to any of them, or to an average, above the seat diagram."),
+        ("How does the forecast work?",
+         f"It plays out the election thousands of times. Each run nudges every party's vote by about as much as polls usually miss, "
+         f"decides all {n} electorates, and shares out the seats with the Sainte-Laguë formula. Each percentage is how often that "
+         "outcome happened."),
+        ("Is this a prediction?",
+         "No. It shows the range of results today's polls point to. Electorate chances are estimates built from 2023 results and "
+         "published electorate polls, not official forecasts."),
+    ]
+
+
+def json_ld(today, qa):
+    site, page = SITE + "#website", SITE + "#page"
+    me = {"@type": "Person", "name": "Dan Richards"}
+    graph = [
+        {"@type": "WebSite", "@id": site, "url": SITE, "name": "nzpolls", "inLanguage": "en-NZ"},
+        {"@type": "WebPage", "@id": page, "url": SITE, "name": "NZ election 2026: seat forecast and poll tracker",
+         "description": "Seat forecast and poll tracker for New Zealand's 7 November 2026 general election.",
+         "isPartOf": {"@id": site}, "inLanguage": "en-NZ", "dateModified": today, "author": me,
+         "primaryImageOfPage": SITE + "og.png", "about": {"@id": SITE + "#election"}},
+        {"@type": "WebApplication", "name": "NZ election 2026 seat simulator", "url": SITE,
+         "applicationCategory": "ReferenceApplication", "operatingSystem": "Any", "browserRequirements": "Requires JavaScript",
+         "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "NZD"}, "author": me},
+        {"@type": "Event", "@id": SITE + "#election", "name": "2026 New Zealand general election", "startDate": "2026-11-07",
+         "endDate": "2026-11-07", "eventStatus": "https://schema.org/EventScheduled",
+         "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+         "location": {"@type": "Country", "name": "New Zealand"}},
+        {"@type": "FAQPage", "@id": SITE + "#faq", "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in qa]},
+    ]
+    return json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False).replace("</", "<\\/")
+
+
 def hemi_skeleton(n=120):
     """Grey seat diagram shown before the first simulation finishes; same layout as seatPositions() in main.js."""
     rows, inner = 8, 0.36
@@ -68,8 +124,10 @@ def main():
     json.loads(read("data", "map.json"))
     _, poll_summary = latest_poll()
     today = datetime.date.today().isoformat()
-    body = body.replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton())
-    page = (read("src", "head.html").replace("{{BUILD_DATE}}", today) + "<style>" + read("src", "base.css") + read("src", "extra.css")
+    qa = faq()
+    faq_html = "\n".join(f'    <h3>{html.escape(q)}</h3>\n    <p>{html.escape(a)}</p>' for q, a in qa)
+    body = body.replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton()).replace("{{FAQ_HTML}}", faq_html)
+    page = (read("src", "head.html").replace("{{BUILD_DATE}}", today).replace("{{JSON_LD}}", json_ld(today, qa)) + "<style>" + read("src", "base.css") + read("src", "extra.css")
             + "</style>\n</head>\n<body>\n" + body
             + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\nconst MAP=" + read("data", "map.json") + ";\n"
             + read("src", "head.js") + read("src", "main.js") + "\n</script>\n" + read("src", "foot.html") + "</body>\n</html>\n")

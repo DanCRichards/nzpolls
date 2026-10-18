@@ -1,0 +1,14 @@
+{
+  "name": "NZ election 2026 seat forecast",
+  "short_name": "nzpolls",
+  "description": "Seat forecast and poll tracker for New Zealand's 7 November 2026 election.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#F3F6F4",
+  "theme_color": "#1E5B4A",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

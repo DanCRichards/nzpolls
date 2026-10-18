@@ -11,7 +11,7 @@ python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
 ```
 
-`build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_SUMMARY}}` (the footer's latest-poll line) in `body.html` from the first entry in `POLLS`, so the latest poll is plain text for search engines and link previews, and `{{BUILD_DATE}}` in the JSON-LD in `head.html`. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
+`build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_SUMMARY}}` (the footer's latest-poll line) in `body.html` from the first entry in `POLLS`, so the latest poll is plain text for search engines and link previews, `{{FAQ_HTML}}` and `{{JSON_LD}}` from `faq()` and `json_ld()` (the election FAQ at the bottom of the page and the matching WebSite, WebPage, WebApplication, Event and FAQPage structured data, with answers built from the data files), and `{{BUILD_DATE}}` in `head.html`. Keep the FAQ text and structured data coming from the same `faq()` list so they always match. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
 
 ## Files
 
@@ -29,7 +29,7 @@ open dist/index.html   # no server needed; the page is fully self-contained
 | `data/map.json` | Generated. Embedded in the page as `const MAP`: SVG paths, label points and bounding boxes per electorate |
 | `data/boundaries/` | Map sources: Stats NZ 2026 electorate boundaries (CC BY 4.0) and a LINZ coastline (CC BY 3.0 NZ) |
 | `data/NZ_2026_Poll_Seat_Tracker.xlsx` | Companion spreadsheet: Sainte-Laguë seat calculator and poll log |
-| `static/` | `favicon.svg`, `apple-touch-icon.png` and `og.png` (the 1200×630 link-preview image). Copied into `dist/` by the build |
+| `static/` | Icons (`favicon.ico`, `favicon.svg`, `favicon-96.png`, `apple-touch-icon.png`, `icon-192/512.png`, maskable 512), `site.webmanifest` and `og.png` (the 1200×630 link-preview image). Copied into `dist/` by the build |
 | `dist/` | Built output: `index.html`, the `static/` files, and generated `robots.txt` and `sitemap.xml` |
 
 ## How it works
@@ -64,6 +64,7 @@ Above it, a short intro (date and countdown, title, one line). Keep it short so 
 5. **More tools:** the all-party chart of what extra votes would do.
 6. **Traditional government blocs:** which bloc each other party sits in.
 7. **Custom blocs:** saved in localStorage under `nzSeatForecast.customBlocs.v1`.
+8. **Election FAQ** (collapsed `details#faq`), then the footer with the latest poll, the coffee link and sources.
 
 A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
 
