@@ -13,7 +13,7 @@ const STAND = {}; ESEATS.forEach((s,i)=>s.c.forEach((c,j)=>{ STAND[c.p+"|"+c.nm]
 
 const POLLS = [
  {id:"1News–Verian, 8–12 Oct",mid:"2026-10-10",inc:1,s:{NAT:28,LAB:28,GRN:15,ACT:10,NZF:10,TPM:0.4,OPP:8}},
- {id:"Anacta, 6–10 Oct",mid:"2026-10-08",inc:1,s:{NAT:28,LAB:29,GRN:15,ACT:9,NZF:10,TPM:2,OPP:5}},
+ {id:"Anacta, 6–10 Oct",mid:"2026-10-08",inc:1,s:{NAT:28,LAB:29,GRN:15,ACT:9,NZF:10,TPM:1.9,OPP:5.4}},
  {id:"Curia, 1–5 Oct",mid:"2026-10-03",inc:1,s:{NAT:28.5,LAB:28.2,GRN:13.3,ACT:9.2,NZF:12,TPM:1.4,OPP:4.8}},
  {id:"1News–Verian, 1–5 Oct",mid:"2026-10-03",inc:1,s:{NAT:29,LAB:28,GRN:16,ACT:9,NZF:10,TPM:0.6,OPP:7}},
  {id:"RNZ–Reid, 24 Sep–1 Oct",mid:"2026-09-28",inc:1,s:{NAT:25.9,LAB:30.8,GRN:14.8,ACT:9,NZF:10.6,TPM:null,OPP:5.5}},
