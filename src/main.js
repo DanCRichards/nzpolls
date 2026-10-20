@@ -3,6 +3,9 @@ const state = {
   bloc:{GRN:"opp",TPM:"opp",LAB:"opp",OPP:"und",OTH:"und",NZF:"gov",NAT:"gov",ACT:"gov"},
   listParty:"NAT", listFull:false, sim:null, showMps:false
 };
+// The shared polling miss moves votes between the traditional sides. It uses these fixed sides, not state.bloc, so moving
+// a party to another side changes only who counts as governing, never anyone's votes or seats.
+const SWING_BLOC={...state.bloc};
 function adjusted(){
   // 1. late swing  2. Opportunity squeeze
   const sh={...state.shares};
@@ -73,12 +76,13 @@ function blocTotals(seats){ const t={opp:0,und:0,gov:0}; [...PARTIES,OTH].forEac
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 function makeNormal(rand){let spare=null;return function(){ if(spare!==null){const v=spare;spare=null;return v;} let u=0,v=0;while(u===0)u=rand();v=rand();const m=Math.sqrt(-2*Math.log(u));spare=m*Math.sin(2*Math.PI*v);return m*Math.cos(2*Math.PI*v);};}
 let SIMTOKEN=0;
+const CLOSE=0.10; // outcomes within 10 points of each other are too close to call
 async function simulate(nOverride, onProgress, token, sync){
   const OFF=state.err===0, N=OFF?1:(nOverride||parseInt(document.getElementById("nsim").value,10)), k=state.err, corr=OFF?false:state.corr, SH=eff();
   const rand=mulberry32(20261107), norm=makeNormal(rand);
   const codes=PARTIES.map(p=>p.c), P=codes.length, pidx=Object.fromEntries(codes.map((c,i)=>[c,i]));
   const base=codes.map(c=>Math.max(0,SH[c])/100), baseSum=base.reduce((a,b)=>a+b,0);
-  const govI=codes.map((c,i)=>state.bloc[c]==="gov"?i:-1).filter(i=>i>=0), oppI=codes.map((c,i)=>state.bloc[c]==="opp"?i:-1).filter(i=>i>=0);
+  const govI=codes.map((c,i)=>SWING_BLOC[c]==="gov"?i:-1).filter(i=>i>=0), oppI=codes.map((c,i)=>SWING_BLOC[c]==="opp"?i:-1).filter(i=>i>=0);
   const govBase=govI.reduce((a,i)=>a+base[i],0), oppBase=oppI.reduce((a,i)=>a+base[i],0);
   const prep=ESEATS.map((s,i)=>{ const idx=s.c.map((c,j)=>j).filter(j=>s.c[j].w>0);
     return {lock:state.locks[i], idx, w:idx.map(j=>s.c[j].w), pi:idx.map(j=>pidx[s.c[j].p]??-1), oth:idx.map(j=>s.c[j].p==="OTH"),
@@ -143,8 +147,11 @@ async function simulate(nOverride, onProgress, token, sync){
   const modeTot=medS.reduce((a,b)=>a+b,0)+medO;
   // most likely outcome (ties go National-led, then Labour-led); the drawn Parliament must show it, so it never contradicts the odds
   const outN=[0,0,0]; for(let s=0;s<N;s++) outN[outc[s]]++;
-  const topOut=outN.indexOf(Math.max(...outN));
-  const pool=new Uint8Array(STORE); let inPool=0; for(let s=0;s<STORE;s++) if(outc[s]===topOut){ pool[s]=1; inPool++; }
+  const topOut=outN.indexOf(Math.max(...outN)), byN=outN.slice().sort((a,b)=>b-a);
+  // too close to call: the top two outcomes are within CLOSE of each other. Then no outcome is claimed, and the drawn
+  // Parliament is simply the typical one, so moving a party between sides never changes the seats drawn.
+  const close=!OFF && (byN[0]-byN[1])/N<CLOSE;
+  const pool=new Uint8Array(STORE); let inPool=0; for(let s=0;s<STORE;s++) if(close||outc[s]===topOut){ pool[s]=1; inPool++; }
   if(!inPool) pool.fill(1);
   // closest run to the middle result among those; among ties, the one whose electorate results are most plausible
   const dist=new Float64Array(STORE); let bestD=1e9;
@@ -159,7 +166,7 @@ async function simulate(nOverride, onProgress, token, sync){
   const natHist={}; for(let s=0;s<N;s++) natHist[elecNat[s]]=(natHist[elecNat[s]]||0)+1;
   state.sim={N,k,corr,off:OFF,codes,seatsS,othS,totS,outc,fOpp,fNat,fBloc,fTpm,fOth,inParl,seatWin,listIn,medS,medO,
     ranges:codes.map((c,i)=>[q(seatsS[i],0.1),q(seatsS[i],0.9)]),
-    outN,topOut,rep:{winners:repW,seats:repSeats,total:repTotal,majority:Math.floor(repTotal/2)+1,entNat:entNat[best],elecNat:elecNat[best]},
+    outN,topOut,close,rep:{winners:repW,seats:repSeats,total:repTotal,majority:Math.floor(repTotal/2)+1,entNat:entNat[best],elecNat:elecNat[best]},
     modeTot,modeTotP:(totCount[modeTot]||0)/N,natHist,medEntNat:med(entNat),medElecNat:med(elecNat)};
   return true;
 }
@@ -197,7 +204,7 @@ function drawHouse(){
     if(state.showMps) h+=`<text class="ini${o.c==="ACT"?" dk":""}" x="${x.toFixed(1)}" y="${(y+1.8).toFixed(1)}" text-anchor="middle">${esc(initials(o.nm))}</text>`; });
   // outline the side that holds a majority in this Parliament
   { const band=seatPositions(order.length).band, tb=blocTotals(rep.seats);
-    const win= tb.gov>=rep.majority?"gov": tb.opp>=rep.majority?"opp":null;
+    const win= sim.close?null: tb.gov>=rep.majority?"gov": tb.opp>=rep.majority?"opp":null;
     if(win){
       const inB=i=>state.bloc[order[i].c]===win, rows={};
       pos.forEach((p,i)=>{ const R0=rows[p.row]||(rows[p.row]={r:p.r,step:p.step,tmin:null,tmax:null}); if(inB(i)){ R0.tmin=R0.tmin==null?p.t:Math.min(R0.tmin,p.t); R0.tmax=R0.tmax==null?p.t:Math.max(R0.tmax,p.t); } });
@@ -235,7 +242,10 @@ function drawHouse(){
   const outs=[[g,"National-led majority","var(--NAT)"],[o2,"Labour-led majority","var(--LAB)"],[hu,"Neither has a majority: kingmakers decide","var(--OTH)"]];
   const top=outs[sim.topOut];
   const vt={0:"a National-led majority",1:"a Labour-led majority",2:"neither side has a majority, so the kingmakers decide"};
-  document.getElementById("verdict").textContent=`Most likely: ${vt[outs.indexOf(top)]} (${fmtP(pc(top[0]))} of simulations).`;
+  const second=outs.filter(o=>o!==top).sort((a,b)=>b[0]-a[0])[0], short={0:"a National-led majority",1:"a Labour-led majority",2:"no majority, with kingmakers deciding"};
+  document.getElementById("verdict").textContent= sim.close
+    ? `Too close to call: ${short[outs.indexOf(top)]} in ${fmtP(pc(top[0]))} of simulations, ${short[outs.indexOf(second)]} in ${fmtP(pc(second[0]))}.`
+    : `Most likely: ${vt[outs.indexOf(top)]} (${fmtP(pc(top[0]))} of simulations).`;
   document.getElementById("odds").innerHTML=outs.map(([v,l,c])=>`<div class="odd" style="border-left:4px solid ${c}"><div class="big">${fmtP(pc(v))}</div><div class="lab">${l}</div></div>`).join("");
   const tb=blocTotals(rep.seats), pct=v=>(v/rep.total*100).toFixed(2)+"%", colors={opp:"var(--LAB)",und:"var(--OTH)",gov:"var(--NAT)"};
   document.getElementById("blocs").innerHTML=partyBar(rep.seats,rep.total,rep.majority,true)+`<div class="blocrow">${BLOC_ORDER.map(b=>`<span><span class="swatch" style="background:${colors[b]}"></span>${BLOCS[b]} <b>${tb[b]}</b></span>`).join("")}</div>`;
@@ -1042,7 +1052,7 @@ function confetti(colors, host, opts={}){
 function celebrate(){
   const sim=state.sim; if(!sim||sim.off===undefined) return; const N=sim.N; let g=0,o=0; for(let i=0;i<N;i++){ if(sim.outc[i]===0) g++; else if(sim.outc[i]===1) o++; }
   const k=N-g-o, top= g>=o&&g>=k?"gov":o>=k?"opp":"und";
-  if(top==="und") return; // no confetti unless one side is most likely to govern
+  if(top==="und"||sim.close) return; // no confetti unless one side is clearly most likely to govern
   const palette={gov:["--NAT","--ACT","--NZF"],opp:["--LAB","--GRN","--TPM"]}[top];
   confetti(palette, document.getElementById("houseSection"));
   const dock=document.getElementById("dock");

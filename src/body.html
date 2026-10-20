@@ -50,7 +50,7 @@
             <tbody id="partyBody"></tbody>
           </table>
         </div>
-        <p class="note"><button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button> "Most likely seats" is the middle result across all simulations; 80% of runs fall inside the range. The diagram shows the single simulated Parliament closest to the middle result, so you can see actual MPs.</p>
+        <p class="note"><button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button> "Most likely seats" is the middle result across all simulations; 80% of runs fall inside the range. The diagram shows one simulated Parliament so you can see actual MPs: among runs with the most likely outcome, the one closest to the middle result. When the top two outcomes are within 10 points it's too close to call, so the diagram shows the run closest to the middle result overall and doesn't outline a majority.</p>
       </div>
     </details>
   </section>
@@ -144,7 +144,7 @@
           <button data-k="0" data-tip="Off: no simulations. One result using the poll exactly as published, with every electorate going to its favourite. Every chance shows as 0% or 100%.">Off</button><button data-k="1" data-tip="Small: only the random error from interviewing about 1,000 people. A party on 28% usually lands within about ±1.8 points; one on 8% within about ±1.1. Real elections usually miss by more than this.">Small</button><button data-k="1.6" data-tip="Typical (recommended): about how far NZ polls usually end up from the result. A party on 28% usually lands within about ±2.9 points; one on 8% within about ±1.8.">Typical</button><button data-k="2.4" data-tip="Big miss: for testing a bad polling year. A party on 28% usually lands within about ±4.3 points; one on 8% within about ±2.6.">Big miss</button><button data-k="0.3" data-tip="Specials only: for after election night, when only special votes are left to count. Results can only move by a few tenths of a point, roughly what specials have shifted in recent elections.">Specials only</button>
         </div>
         <p class="thr" style="margin:-4px 0 10px">"Off" turns the simulations off: you get one result using the poll exactly as published, with every electorate going to its favourite, and every chance shows as 0% or 100%.</p>
-        <label class="switch" data-tip="On: in each simulation, the whole National-led side can do a bit better or worse than polled together, and the Labour-led side the opposite, as happens when polls miss in one direction. Off: each party's error is independent, which tends to understate the chance of a clear win for one side."><input type="checkbox" id="corr" checked><span class="track" aria-hidden="true"></span> Misses can favour one whole side</label>
+        <label class="switch" data-tip="On: in each simulation, National, ACT and NZ First can together do a bit better or worse than polled, and Labour, the Greens and Te Pāti Māori the opposite, as happens when polls miss in one direction. These are the traditional sides; moving a party to another side below changes who governs, not how its vote moves. Off: each party's error is independent, which tends to understate the chance of a clear win for one side."><input type="checkbox" id="corr" checked><span class="track" aria-hidden="true"></span> Misses can favour one whole side</label>
         <p class="live" id="l-err" style="margin-top:10px"></p><div class="cond" id="c-err"></div>
       </div>
     </div>

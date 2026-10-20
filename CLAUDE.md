@@ -44,7 +44,7 @@ python3 build.py --preview   # the test copy for nzpolls.co.nz/preview/: noindex
 |---|---|
 | `tests/data.test.mjs` | Data integrity without a browser: 71 electorates, weights add to 100, party codes, lists, map outlines match the seats, polls newest-first with every party present, the poll average, trend, presets, seat sources |
 | `tests/build.test.mjs` | The built page: no unfilled `{{…}}` placeholders, JSON-LD parses and its FAQ matches the visible FAQ, latest-poll line, icons, manifest, robots.txt and sitemap.xml |
-| `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, the drawn Parliament matching the most likely outcome, simulations-off |
+| `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, the drawn Parliament matching the most likely outcome or too close to call, moving a party between sides leaving every seat unchanged, simulations-off |
 | `tests/share.test.mjs` | Shared links: the settings banner, the share link carrying the settings, a shared link reproducing the same odds, reset, and tampered links being ignored |
 | `tests/ui.test.mjs` | The page as a visitor uses it: default poll, every poll runs, the simulation count, seat sources, calling and uncalling a seat, the map, the why-our-numbers-differ table, reset, analytics events, no page errors |
 
@@ -61,7 +61,7 @@ python3 build.py --preview   # the test copy for nzpolls.co.nz/preview/: noindex
 **Seat chances:** `seatProbs(seat, shares)` turns each candidate's starting weight `w` into probabilities, nudged by how far their party's vote is from the poll average.
 
 **Simulation:** `simulate()` is async and runs in batches of 400 so the progress bar can update; a newer run cancels an older one. Each run:
-1. Adds polling error to the party vote: independent per party, plus an optional shared swing between blocs.
+1. Adds polling error to the party vote: independent per party, plus an optional shared swing between the traditional sides (`SWING_BLOC`, fixed at the default blocs, so moving a party to another side changes who governs but never anyone's votes or seats).
 2. Decides all 71 electorates. Every seat draws exactly one random number per run, whether or not it's called, so changing one seat never disturbs another.
 3. Allocates seats with Sainte-Laguë: 5% threshold or an electorate, overhang for extra electorate wins, and vacant seats when a list runs out (Te Pāti Māori has one list candidate).
 
@@ -71,7 +71,9 @@ The random seed is fixed, so identical inputs give identical results. That's del
 
 **Results (`state.sim`)** are typed arrays with one slot per run: seats per party, independent seats, House size, outcome (0 National-led majority, 1 Labour-led, 2 neither), factor flags, per-candidate seat wins (`seatWin`), and per-rank list entries (`listIn`). Every percentage on the page is a count from these. Custom blocs reuse them, so they update without a rerun.
 
-**`sim.rep` is the Parliament drawn on screen:** among runs with the most likely outcome (`sim.topOut`, so the diagram never contradicts the odds), the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.
+**Too close to call:** when the top two outcomes are within `CLOSE` (10 points), `sim.close` is set: the verdict says "Too close to call" with both, the diagram outlines no majority, and there's no confetti.
+
+**`sim.rep` is the Parliament drawn on screen:** among runs with the most likely outcome (`sim.topOut`, so the diagram never contradicts the odds; all runs when `sim.close`), the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.
 
 ## Page sections
 

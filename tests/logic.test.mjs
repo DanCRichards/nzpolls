@@ -164,7 +164,7 @@ test("with simulations off, the result is the poll exactly as published", async 
   for (const c of Object.keys(r.sim)) assert.equal(r.sim[c], r.direct[c], `${c}: simulation ${r.sim[c]} vs direct ${r.direct[c]}`);
 });
 
-test("the drawn Parliament always shows the most likely outcome", async () => {
+test("the drawn Parliament shows the most likely outcome unless it is too close to call", async () => {
   // near a tipping point the run closest to every party's middle result can land on the other side of the majority line
   const bad = await run(async () => {
     const saved = { oppMode: state.oppMode, squeeze: state.squeeze, shares: { ...state.shares } }, problems = [];
@@ -174,12 +174,33 @@ test("the drawn Parliament always shows the most likely outcome", async () => {
       const n = [0, 0, 0]; for (let k = 0; k < s.N; k++) n[s.outc[k]]++;
       const t = { opp: 0, und: 0, gov: 0 }; for (const c of Object.keys(rep.seats)) t[state.bloc[c]] += rep.seats[c];
       const drawn = t.gov >= rep.majority ? 0 : t.opp >= rep.majority ? 1 : 2;
-      if (n[drawn] !== Math.max(...n)) problems.push(`${poll.id}, squeeze ${sq}: drawn outcome ${drawn}, counts ${n}`);
+      // when one outcome clearly leads, the diagram shows it; when it's too close to call, no majority is claimed
+      if (!s.close && n[drawn] !== Math.max(...n)) problems.push(`${poll.id}, squeeze ${sq}: drawn outcome ${drawn}, counts ${n}`);
+      const sorted = n.slice().sort((a, b) => b - a);
+      if (s.close !== (sorted[0] - sorted[1]) / s.N < CLOSE) problems.push(`${poll.id}, squeeze ${sq}: close flag wrong`);
     }
     Object.assign(state, saved); await simulate();
     return problems;
   });
   assert.deepEqual(bad, []);
+});
+
+test("moving a party to another side changes who governs, never anyone's seats", async () => {
+  // the shared link from a bug report: Opportunity on 12.6%, National's candidates 9 points ahead of its party vote
+  const r = await run(async () => {
+    const saved = { shares: { ...state.shares }, split: state.split, bloc: { ...state.bloc } };
+    Object.assign(state, { shares: { ...POLLS[0].s, OPP: 12.6 }, split: 9 });
+    const take = () => ({ seats: JSON.stringify(state.sim.seatsS.map((a) => Array.from(a))), rep: JSON.stringify(state.sim.rep.seats), outN: state.sim.outN.slice() });
+    const out = {};
+    for (const side of ["und", "opp", "gov"]) { state.bloc = { ...saved.bloc, OPP: side }; await simulate(2000); out[side] = take(); }
+    Object.assign(state, saved); await simulate();
+    return out;
+  });
+  for (const side of ["opp", "gov"]) {
+    assert.equal(r[side].seats, r.und.seats, `Opportunity ${side}: seats changed in some run`);
+    assert.equal(r[side].rep, r.und.rep, `Opportunity ${side}: the drawn Parliament changed`);
+  }
+  assert.equal(r.opp.outN[0], r.und.outN[0], "a National-led majority doesn't depend on where Opportunity sits");
 });
 
 test("no page errors while running the logic tests", () => {
