@@ -3,11 +3,25 @@
     python3 data/data.py   # only after editing seats, candidates or party lists
     python3 data/map.py    # only after replacing the boundary files in data/boundaries/
     python3 build.py       # always, after any change
+    python3 build.py --preview   # a test copy for nzpolls.co.nz/preview/ (the deploy workflow does this for branches)
 """
 import datetime, html, html.parser, json, math, os, re, shutil, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SITE = "https://nzpolls.co.nz/"
+PREVIEW = "--preview" in sys.argv
+
+
+def preview(page):
+    """The test copy served at /preview/: not indexed, no analytics, share links stay on the preview, and labelled."""
+    url = SITE + "preview/"
+    page = page.replace(f'<link rel="canonical" href="{SITE}">', f'<link rel="canonical" href="{url}">\n<meta name="robots" content="noindex, nofollow">')
+    page = page.replace(f'<meta property="og:url" content="{SITE}">', f'<meta property="og:url" content="{url}">')
+    page = re.sub(r'<script[^>]*umami[^>]*></script>\n?', "", page)
+    flag = ('<div style="position:fixed;left:8px;bottom:8px;z-index:99;background:#A33A1D;color:#fff;font:600 12px/1 system-ui,sans-serif;'
+            'padding:6px 9px;border-radius:999px;pointer-events:none">Preview: not the live site</div>\n')
+    assert url in page and "cloud.umami.is" not in page, "preview build: head.html changed, update preview()"
+    return page.replace("<body>\n", "<body>\n" + flag, 1)
 read = lambda *p: open(os.path.join(ROOT, *p), encoding="utf-8").read()
 
 
@@ -131,6 +145,8 @@ def main():
             + "</style>\n</head>\n<body>\n" + body
             + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\nconst MAP=" + read("data", "map.json") + ";\n"
             + read("src", "head.js") + read("src", "main.js") + "\n</script>\n" + read("src", "foot.html") + "</body>\n</html>\n")
+    if PREVIEW:
+        page = preview(page)
     os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
     open(os.path.join(ROOT, "dist", "index.html"), "w", encoding="utf-8").write(page)
     # icons, share image, robots.txt and sitemap.xml sit next to the page
@@ -140,7 +156,7 @@ def main():
     open(os.path.join(ROOT, "dist", "sitemap.xml"), "w").write(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         f"  <url><loc>{SITE}</loc><lastmod>{today}</lastmod><changefreq>daily</changefreq></url>\n</urlset>\n")
-    print(f"Built dist/index.html ({len(page) // 1024} KB)")
+    print(f"Built dist/index.html ({len(page) // 1024} KB){' as a preview' if PREVIEW else ''}")
 
 
 if __name__ == "__main__":

@@ -10,7 +10,10 @@ python3 data/map.py    # only after replacing files in data/boundaries/ (needs p
 python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
 npm install && npm test   # builds, then runs the test suite (needs Node 22; Playwright drives Chromium)
+python3 build.py --preview   # the test copy for nzpolls.co.nz/preview/: noindex, no analytics, share links stay on /preview/
 ```
+
+**Previews:** every push to a `claude/**` branch runs the deploy workflow (`.github/workflows/pages.yml`), which builds the live site from `main` and the branch into `/preview/`, so the branch can be tried at https://nzpolls.co.nz/preview/ before merging. The next push to `main` removes it. The `github-pages` environment must allow `claude/*` branches to deploy.
 
 `build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_SUMMARY}}` (the footer's latest-poll line) in `body.html` from the first entry in `POLLS`, so the latest poll is plain text for search engines and link previews, `{{FAQ_HTML}}` and `{{JSON_LD}}` from `faq()` and `json_ld()` (the election FAQ at the bottom of the page and the matching WebSite, WebPage, WebApplication, Event and FAQPage structured data, with answers built from the data files), and `{{BUILD_DATE}}` in `head.html`. Keep the FAQ text and structured data coming from the same `faq()` list so they always match. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
 
@@ -42,13 +45,16 @@ npm install && npm test   # builds, then runs the test suite (needs Node 22; Pla
 | `tests/data.test.mjs` | Data integrity without a browser: 71 electorates, weights add to 100, party codes, lists, map outlines match the seats, polls newest-first with every party present, the poll average, trend, presets, seat sources |
 | `tests/build.test.mjs` | The built page: no unfilled `{{…}}` placeholders, JSON-LD parses and its FAQ matches the visible FAQ, latest-poll line, icons, manifest, robots.txt and sitemap.xml |
 | `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, the drawn Parliament matching the most likely outcome, simulations-off |
+| `tests/share.test.mjs` | Shared links: the settings banner, the share link carrying the settings, a shared link reproducing the same odds, reset, and tampered links being ignored |
 | `tests/ui.test.mjs` | The page as a visitor uses it: default poll, every poll runs, the simulation count, seat sources, calling and uncalling a seat, the map, the why-our-numbers-differ table, reset, analytics events, no page errors |
 
-`tests/helpers.mjs` opens `dist/index.html` with third-party scripts blocked and waits for the first full simulation (`settled()`). Top-level `const`s such as `state`, `ESEATS` and `SEAT_IDX` are reachable from `page.evaluate`. When you change a rule (for example how seats are allocated), add or update a test for it. When you add a poll, the data tests check it's in the right place.
+`tests/helpers.mjs` opens `dist/index.html` with third-party scripts blocked and waits for the first full simulation (`settled()`); pass `{ search: "?s=…" }` to open a shared link. Top-level `const`s such as `state`, `ESEATS` and `SEAT_IDX` are reachable from `page.evaluate`. When you change a rule (for example how seats are allocated), add or update a test for it. When you add a poll, the data tests check it's in the right place.
 
 ## How it works
 
 **Inputs live in one `state` object** (`main.js`): party vote (`shares`), the poll it came from (`pollBase`), called seats (`locks`), the three traditional blocs (`bloc`: `opp` Labour-led, `und` kingmaker, `gov` National-led), polling error (`err`, 0 means simulations off), `simSeats`, the National split-ticket slider (`split`), `trend`, Opportunity's `oppMode` (`direct` or `squeeze`), `squeeze` and `squeezeTo`, and `custom` blocs.
+
+**Sharing.** The settings travel in the link as `?s=` plus base64url JSON holding only what differs from the standard forecast (`readConfig()`, short keys listed above it in `main.js`), always with the poll's id so a later default poll doesn't change a shared forecast. `applySharedLink()` runs before the first simulation and `applyConfig()` checks every value, so a tampered link falls back to defaults. `drawCfgBar()` (after every render) lists the changes from the standard forecast in `#cfgBar`, saying when they came from a shared link, with a reset that also clears called seats and blocs and drops `?s` from the address. The share dialog (`#shareDlg`) offers "My settings" or "The standard forecast", an editable title with the current odds, and Reddit, X, Bluesky, copy and the system share sheet. Links always point at the canonical URL.
 
 **`eff()` is the party vote actually used.** It applies late swing, then Opportunity's squeeze (squeeze mode only), on top of `state.shares`. Always read party vote through `eff()`.
 
@@ -71,7 +77,7 @@ The random seed is fixed, so identical inputs give identical results. That's del
 
 Above it, a short intro (date and countdown, title, one line). Keep it short so the seat diagram is on the first screen on a phone.
 
-1. **Most likely Parliament:** the poll and simulation controls, then the seat diagram with a majority outline, odds cards, party bar with hover MP lists, and a collapsible detail table.
+1. **Most likely Parliament:** the changes banner (`#cfgBar`, only when something differs from the standard forecast), the poll and simulation controls, then the seat diagram with a majority outline, odds cards, the Share button, party bar with hover MP lists, and a collapsible detail table.
 2. **Simulation:** intro and reset, then cards for Opportunity (side, vote with direct and squeeze modes, impact), National's overhang (bars, list table under More info), polling error, Te Pāti Māori, breakaway MPs and late swing.
 3. **Electorate seats:** a List / Map switch. The list shows cards with simulated chances, rating pills and calls. The map (general or Māori electorates) colours each seat by who's ahead, with the shade set by the same rating as the pills and stripes for toss-ups; selecting a seat shows its card. Map state lives in `MAPV` (`main.js`), and `paintMap()` runs after every simulation.
 4. **Party list outcome.**
@@ -82,7 +88,7 @@ Above it, a short intro (date and countdown, title, one line). Keep it short so 
 9. **Election FAQ** (collapsed `details#faq`), then the footer with the latest poll, the coffee link and sources.
 10. **Comments and suggestions:** utterances comments stored as GitHub issues on `DanCRichards/nzpolls` (one issue titled "Comments on nzpolls.co.nz", label `comment`), plus a link to open a new issue. The widget loads only when the section scrolls near the screen. Needs the utterances GitHub app installed on the repo.
 
-A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
+A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar, Share and Reset.
 
 On phones only, a small "Change the forecast" pill (`#scrollCue`) appears at the bottom after the first full result, until the visitor scrolls; tapping it scrolls to the simulation section.
 

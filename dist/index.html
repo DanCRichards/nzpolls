@@ -662,6 +662,30 @@ details.diff a{color:var(--chamber)}
 .comments .hint a{color:var(--chamber);font-weight:600}
 #commentsBox{min-height:120px}
 #commentsBox .utterances{max-width:100%}
+
+/* sharing: settings banner and share dialog */
+.cfgbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start;justify-content:space-between;margin:4px 0 12px;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:10px;background:var(--bg);font-size:.86rem}
+.cfgbar.shared{border-left-color:var(--chamber);background:var(--chamber-soft)}
+.cfgbar ul{margin:4px 0 0;padding-left:18px}
+.cfgbar li{margin:1px 0}
+.cfgtxt{flex:1 1 260px;min-width:0}
+.cfgbtns{display:flex;gap:6px;flex:none}
+.cfgbtns .btn{background:var(--surface)}
+.sharerow{margin-top:12px}
+.sharebody{padding:12px 18px 18px;display:grid;gap:8px}
+.sharewhat{border:0;padding:0;margin:0;display:grid;gap:8px}
+.sharewhat legend{font-weight:600;margin-bottom:4px}
+.sharewhat label{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.sharewhat label:has(input:checked){border-color:var(--chamber);background:var(--chamber-soft)}
+.sharewhat input{margin-top:3px}
+.sharewhat .thr{display:block;font-size:.8rem}
+.sharelab{font-weight:600;font-size:.85rem;margin-top:4px}
+.sharetext,.shareurl input{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;font-size:.85rem;background:var(--surface);color:var(--ink);min-width:0}
+.shareurl{display:flex;gap:6px}
+.shareurl .btn{white-space:nowrap}
+.sharetext{resize:vertical}
+.shareurl input{color:var(--muted)}
+.sharebtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 </style>
 </head>
 <body>
@@ -671,6 +695,7 @@ details.diff a{color:var(--chamber)}
   <div class="dockin">
     <svg id="miniHemi" viewBox="0 0 420 222" class="mini"></svg>
     <div class="dockinfo"><p id="dockOdds"></p><div id="dockBar"></div><div class="dockcounts" id="dockCounts"></div></div>
+    <button class="dockreset" id="dockShare" title="Share this forecast">Share</button>
     <button class="dockreset" id="dockReset" title="Reset everything to the latest poll">Reset</button>
   </div>
 </div>
@@ -687,6 +712,7 @@ details.diff a{color:var(--chamber)}
   <section class="chamber" id="houseSection" aria-labelledby="h-house">
     <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
     <p class="hint" id="houseHint">Running simulated elections…</p>
+    <div class="cfgbar" id="cfgBar" role="status" hidden></div>
     <div class="topctl" role="group" aria-label="Forecast settings">
       <label class="inline">Party vote from <select id="scenario"></select></label>
       <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
@@ -703,6 +729,7 @@ details.diff a{color:var(--chamber)}
       <div>
         <p class="verdict" id="verdict">Working out the most likely result…</p>
         <div class="odds" id="odds"><div class="odd skel"><div class="big">…</div><div class="lab">National-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Labour-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Neither has a majority: kingmakers decide</div></div></div>
+        <div class="sharerow"><button class="btn primary" id="shareBtn" type="button">Share this forecast</button></div>
       </div>
     </div>
     <div class="blocs wide" id="blocs"></div>
@@ -1028,6 +1055,27 @@ details.diff a{color:var(--chamber)}
   </section>
 </main>
 <div class="ftip" id="ftip" role="tooltip" hidden></div>
+<dialog id="shareDlg" class="dlg sharedlg" aria-labelledby="shareTitle">
+  <div class="dlghead"><h2 id="shareTitle">Share this forecast</h2><button class="btn" id="shareClose" type="button">Close</button></div>
+  <div class="sharebody">
+    <fieldset class="sharewhat" id="shareWhat">
+      <legend>What to share</legend>
+      <label><input type="radio" name="shareWhat" value="mine" checked> <span><b>My settings</b><span class="thr" id="shareMineNote"></span></span></label>
+      <label><input type="radio" name="shareWhat" value="plain"> <span><b>The standard forecast</b><span class="thr">The latest poll with everything else at the defaults.</span></span></label>
+    </fieldset>
+    <p class="thr" id="shareSame" hidden>You haven't changed anything, so the link opens the standard forecast.</p>
+    <label class="sharelab" for="shareText">Post title</label>
+    <textarea class="sharetext" id="shareText" rows="2" maxlength="280"></textarea>
+    <label class="sharelab" for="shareUrl">Link</label>
+    <div class="shareurl"><input id="shareUrl" type="text" readonly><button class="btn" id="shareCopy" type="button" data-to="copy">Copy link</button></div>
+    <div class="sharebtns">
+      <button class="btn primary" type="button" data-to="reddit">Post to Reddit</button>
+      <button class="btn" type="button" data-to="x">Post to X</button>
+      <button class="btn" type="button" data-to="bluesky">Post to Bluesky</button>
+      <button class="btn" type="button" data-to="native" id="shareNative" hidden>More…</button>
+    </div>
+  </div>
+</dialog>
 <dialog id="simPanel" class="dlg" aria-labelledby="simPanelTitle">
   <div class="dlghead"><h2 id="simPanelTitle">How the simulation works</h2><button class="btn" id="simPanelClose">Close</button></div>
   <div id="simPanelBody"></div>
@@ -2159,7 +2207,7 @@ const scrollCue=(()=>{ const el=document.getElementById("scrollCue"), phone=matc
   return {show:()=>{ if(done||!phone.matches||scrollY>40) return; el.hidden=false; requestAnimationFrame(()=>el.classList.add("on")); }};
 })();
 function showScrollCue(){ scrollCue.show(); }
-function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); drawDiffText(); queueDiff(); }
+function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); drawDiffText(); queueDiff(); drawCfgBar(); }
 // "Why this forecast's numbers differ": what each modelling choice does to the odds, rerun from the current settings
 const DIFF={n:2000, run:0, timer:null};
 function drawDiffText(){
@@ -2249,7 +2297,134 @@ document.getElementById("simPanel").addEventListener("click",e=>{ if(e.target.id
   document.addEventListener("focusout",e=>{ if(e.target.closest("[data-tip]")) ft.hidden=true; });
   document.addEventListener("click",e=>{ const el=e.target.closest("[data-tip]"); if(el) show(el); else ft.hidden=true; });
 })();
-buildControls(); bindOpen(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); firstLoad();
+/* ---------- sharing: settings travel in the link as ?s=<base64url JSON> ---------- */
+// Only what differs from the standard forecast is stored, with short keys:
+// p poll id ("avg" for the average), v edited party votes, b bloc changes, l called seats {seat: candidate},
+// e polling error, k shared miss, x simulate electorates, n simulations, t late swing, sp National split,
+// w bloc swing, m Opportunity mode, q squeeze, z where squeezed voters go.
+const DEFAULTS=JSON.parse(JSON.stringify({err:state.err,corr:state.corr,simSeats:state.simSeats,trend:state.trend,split:state.split,swing:state.swing,
+  oppMode:state.oppMode,squeeze:state.squeeze,squeezeTo:state.squeezeTo,bloc:state.bloc,nsim:"5000"}));
+const ERRS=[0,1,1.6,2.4,0.3], NSIMS=["1000","5000","20000","50000"];
+let SHARED=null; // the settings a visitor arrived with from a shared link
+function readConfig(){
+  const c={}, D=DEFAULTS, sel=document.getElementById("scenario").value, r1=v=>Math.round(v*10)/10;
+  c.p= state.pollName==="Poll average"?"avg":state.pollName;
+  const v={}; PARTIES.forEach(p=>{ if(Math.abs(state.shares[p.c]-state.pollBase[p.c])>=0.05) v[p.c]=r1(state.shares[p.c]); });
+  if(sel==="custom"&&Object.keys(v).length) c.v=v;
+  const b={}; Object.keys(D.bloc).forEach(k=>{ if(state.bloc[k]!==D.bloc[k]) b[k]=state.bloc[k]; }); if(Object.keys(b).length) c.b=b;
+  const l={}; Object.entries(state.locks).forEach(([i,j])=>{ const s=ESEATS[+i]; if(s&&s.c[j]) l[s.n]=s.c[j].nm; }); if(Object.keys(l).length) c.l=l;
+  if(state.err!==D.err) c.e=state.err;
+  if(state.corr!==D.corr) c.k=state.corr?1:0;
+  if(state.simSeats!==D.simSeats) c.x=state.simSeats?1:0;
+  const n=document.getElementById("nsim").value; if(n!==D.nsim) c.n=+n;
+  if(state.trend!==D.trend) c.t=state.trend;
+  if(state.split!==D.split) c.sp=state.split;
+  if(state.swing!==D.swing) c.w=state.swing;
+  if(state.oppMode!==D.oppMode) c.m=state.oppMode;
+  if(state.oppMode==="squeeze"&&state.squeeze!==D.squeeze){ c.q=state.squeeze;
+    if(JSON.stringify(state.squeezeTo)!==JSON.stringify(D.squeezeTo)) c.z={...state.squeezeTo}; }
+  return c;
+}
+// the changes worth listing: everything except a poll that is the current default
+const cfgChanges=c=>{ const o={...c}; if(o.p===POLLS[0].id) delete o.p; return o; };
+function encodeConfig(c){ const by=new TextEncoder().encode(JSON.stringify(c)); let s=""; by.forEach(x=>s+=String.fromCharCode(x)); return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+function decodeConfig(s){
+  try{ const bin=atob(String(s).replace(/-/g,"+").replace(/_/g,"/")), j=JSON.parse(new TextDecoder().decode(Uint8Array.from(bin,x=>x.charCodeAt(0))));
+    return j&&typeof j==="object"&&!Array.isArray(j)?j:null; }catch(e){ return null; }
+}
+// Apply settings from a link (untrusted: every value is checked; anything unknown falls back to the default)
+function applyConfig(c){
+  const D=DEFAULTS, num=(v,lo,hi,d)=>v!=null&&v!==""&&Number.isFinite(+v)?Math.min(hi,Math.max(lo,+v)):d, obj=v=>v&&typeof v==="object"&&!Array.isArray(v);
+  const sel=document.getElementById("scenario"); let pick="0";
+  if(c.p==="avg") pick="avg"; else if(typeof c.p==="string"){ const i=POLLS.findIndex(p=>p.id===c.p); if(i>=0) pick=String(i); }
+  const base=pick==="avg"?AVG:POLLS[+pick].s;
+  state.pollBase={...base}; state.shares={...base}; state.pollName=pick==="avg"?"Poll average":POLLS[+pick].id;
+  let edited=false; if(obj(c.v)) PARTIES.forEach(p=>{ if(c.v[p.c]!=null){ state.shares[p.c]=num(c.v[p.c],0,60,state.shares[p.c]); edited=true; } });
+  sel.value=edited?"custom":pick;
+  state.bloc={...D.bloc}; if(obj(c.b)) Object.keys(D.bloc).forEach(k=>{ if(k!=="LAB"&&k!=="NAT"&&["opp","und","gov"].includes(c.b[k])) state.bloc[k]=c.b[k]; });
+  state.locks={}; if(obj(c.l)) Object.entries(c.l).forEach(([sn,cn])=>{ const i=SEAT_IDX[sn]; if(i==null) return; const j=ESEATS[i].c.findIndex(x=>x.nm===cn); if(j>=0) state.locks[i]=j; });
+  state.err=ERRS.includes(+c.e)&&c.e!=null?+c.e:D.err; if(state.err!==0) state.prevErr=state.err;
+  state.corr=c.k==null?D.corr:!!c.k; state.simSeats=c.x==null?D.simSeats:!!c.x;
+  document.getElementById("nsim").value=NSIMS.includes(String(c.n))?String(c.n):D.nsim;
+  const rng=id=>{ const el=document.getElementById(id); return [+el.min,+el.max]; };
+  state.trend=num(c.t,...rng("trend"),D.trend); state.split=num(c.sp,...rng("split"),D.split); state.swing=num(c.w,-10,10,D.swing);
+  state.oppMode=c.m==="squeeze"?"squeeze":"direct";
+  state.squeeze=state.oppMode==="squeeze"?num(c.q,...rng("squeeze"),D.squeeze):D.squeeze;
+  state.squeezeTo={...D.squeezeTo}; if(obj(c.z)) Object.keys(state.squeezeTo).forEach(k=>{ state.squeezeTo[k]=num(c.z[k],0,100,state.squeezeTo[k]); });
+  const st=document.getElementById("sqTo"); if(st) delete st.dataset.built;
+  syncVotes(); syncLevers(); drawOppMode(); drawCampaign(); drawSeatList();
+}
+function describeConfig(c){
+  const out=[], who=p=>p==="OTH"?"Independents":NAMES[p];
+  if(c.p) out.push(c.p==="avg"?"Poll average instead of the latest poll":`Poll: ${c.p}`);
+  if(c.v) out.push("Party vote set to "+Object.entries(c.v).map(([p,v])=>`${who(p)} ${(+v).toFixed(1)}%`).join(", "));
+  if(c.m==="squeeze") out.push(c.q?`${c.q}% of Opportunity's voters switch late`:"Opportunity's vote squeezed from the poll");
+  if(c.b) Object.entries(c.b).forEach(([p,b])=>out.push(`${who(p)} ${b==="und"?"counted as a kingmaker":`on the ${BLOCS[b]} side`}`));
+  if(c.l){ const l=Object.entries(c.l); out.push(`${l.length} seat${l.length>1?"s":""} called: `+l.map(([s,n])=>`${s} to ${n}`).join(", ")); }
+  if(c.e!=null) out.push(c.e===0?"Simulations off":ERRNAME[String(c.e)].replace(/^a /,"").replace(/^./,x=>x.toUpperCase()));
+  if(c.k===0) out.push("No shared polling miss across each side");
+  if(c.x===0) out.push("Every electorate goes to its favourite");
+  if(c.n) out.push(`${(+c.n).toLocaleString()} simulations`);
+  if(c.t) out.push(`${c.t}% of the recent poll trend carried to election day`);
+  if(c.sp) out.push(`National's candidates ${Math.abs(c.sp)} points ${c.sp>0?"better":"worse"} than its party vote`);
+  if(c.w) out.push(`${Math.abs(c.w)} points swing to the ${c.w>0?"National":"Labour"}-led side`);
+  if(c.z) out.push("Squeezed Opportunity voters split differently");
+  return out;
+}
+function drawCfgBar(){
+  const bar=document.getElementById("cfgBar"), now=cfgChanges(readConfig()), list=describeConfig(now);
+  const fromLink=SHARED&&JSON.stringify(now)===JSON.stringify(cfgChanges(SHARED));
+  if(!list.length&&!SHARED){ bar.hidden=true; return; }
+  bar.hidden=false; bar.classList.toggle("shared",!!SHARED);
+  const head= fromLink?`<b>You're looking at a forecast someone shared.</b> ${list.length?`It changes ${list.length} thing${list.length>1?"s":""} from the standard forecast:`:"It uses the standard settings."}`
+    : SHARED?`<b>A shared forecast, plus your own changes.</b> ${list.length?`Different from the standard forecast:`:"You're back to the standard settings."}`
+    : `<b>You've changed ${list.length} thing${list.length>1?"s":""} from the standard forecast:</b>`;
+  bar.innerHTML=`<div class="cfgtxt">${head}${list.length?`<ul>${list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>
+    <div class="cfgbtns">${list.length?`<button class="btn" id="cfgReset" type="button">Reset to the standard forecast</button>`:""}${SHARED&&!list.length?`<button class="btn" id="cfgDismiss" type="button">Dismiss</button>`:""}</div>`;
+  const rs=document.getElementById("cfgReset"); if(rs) rs.onclick=()=>{ applyConfig({}); dropLink(); update(); };
+  const ds=document.getElementById("cfgDismiss"); if(ds) ds.onclick=()=>{ dropLink(); drawCfgBar(); };
+}
+function dropLink(){ SHARED=null; try{ const u=new URL(location.href); if(u.searchParams.has("s")){ u.searchParams.delete("s"); history.replaceState(null,"",u.pathname+u.search+u.hash); } }catch(e){} }
+function applySharedLink(){
+  let s=null; try{ s=new URLSearchParams(location.search).get("s"); }catch(e){}
+  const c=s&&decodeConfig(s); if(!c) return;
+  applyConfig(c); SHARED=readConfig();
+}
+/* share dialog */
+const SITE=(document.querySelector('link[rel="canonical"]')||{}).href||location.href.split(/[?#]/)[0];
+function shareLink(mine){ const c=readConfig(); return mine&&Object.keys(cfgChanges(c)).length?`${SITE}?s=${encodeConfig(c)}`:SITE; }
+function shareTitle(mine){
+  const s=state.sim; if(!mine||!s||!Object.keys(cfgChanges(readConfig())).length) return "NZ 2026 election seat forecast: thousands of simulated elections, and you can change the poll, Opportunity's vote or any electorate";
+  const [g,o,k]=s.outN.map(x=>fmtP(x/s.N));
+  return `My NZ 2026 seat forecast: National-led majority ${g}, Labour-led ${o}, kingmakers decide ${k}`;
+}
+function shareMode(){ const r=document.querySelector('#shareWhat input:checked'); return r&&r.value==="mine"&&!document.getElementById("shareWhat").hidden?"mine":"plain"; }
+function fillShare(keepTitle){
+  const changed=describeConfig(cfgChanges(readConfig())), mine=shareMode()==="mine";
+  document.getElementById("shareWhat").hidden=!changed.length; document.getElementById("shareSame").hidden=!!changed.length;
+  document.getElementById("shareMineNote").textContent=changed.length?`Includes ${changed.length} change${changed.length>1?"s":""}: ${changed.join("; ")}.`:"";
+  document.getElementById("shareUrl").value=shareLink(mine);
+  if(!keepTitle) document.getElementById("shareText").value=shareTitle(mine);
+}
+function bindShare(){
+  const dlg=document.getElementById("shareDlg");
+  const open=()=>{ const m=dlg.querySelector('input[value="mine"]'); if(m) m.checked=true; fillShare(); if(!dlg.open) dlg.showModal(); };
+  document.getElementById("shareBtn").onclick=open; document.getElementById("dockShare").onclick=open;
+  document.getElementById("shareClose").onclick=()=>dlg.close();
+  dlg.addEventListener("click",e=>{ if(e.target===dlg) dlg.close(); });
+  dlg.querySelectorAll('#shareWhat input').forEach(i=>i.onchange=()=>fillShare());
+  document.getElementById("shareNative").hidden=!navigator.share;
+  dlg.querySelectorAll("[data-to]").forEach(b=>b.onclick=async ()=>{
+    const url=document.getElementById("shareUrl").value, title=document.getElementById("shareText").value.trim(), e=encodeURIComponent;
+    const to=b.dataset.to;
+    if(to==="copy"){ let ok=false; try{ await navigator.clipboard.writeText(url); ok=true; }catch(err){ const f=document.getElementById("shareUrl"); f.select(); try{ ok=document.execCommand("copy"); }catch(x){} }
+      b.textContent=ok?"Copied":"Select and copy"; setTimeout(()=>b.textContent="Copy link",1800); return; }
+    if(to==="native"){ try{ await navigator.share({title,url}); }catch(err){} return; }
+    const target={reddit:`https://www.reddit.com/submit?url=${e(url)}&title=${e(title)}`, x:`https://twitter.com/intent/tweet?text=${e(title)}&url=${e(url)}`, bluesky:`https://bsky.app/intent/compose?text=${e(title+" "+url)}`}[to];
+    if(target) window.open(target,"_blank","noopener");
+  });
+}
+buildControls(); bindOpen(); applySharedLink(); syncLevers(); drawOppMode(); bindTips(); bindMap(); drawSeatList(); bindShare(); firstLoad();
 window.addEventListener("resize",()=>{ placeMaj(document.getElementById("blocs")); placeMaj(document.getElementById("dockBar")); });
 (function(){ const dock=document.getElementById("dock"), target=document.getElementById("hemi");
   const io=new IntersectionObserver(es=>es.forEach(e=>{ const on=!e.isIntersecting && e.boundingClientRect.top<0; dock.classList.toggle("on",on); dock.setAttribute("aria-hidden",!on); }),{threshold:0});
@@ -2279,6 +2454,9 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
     ["#mapRegions button", b=>["Map zoom",{area:txt(b)}]],
     [".cand", b=>{ const i=+b.dataset.s, j=+b.dataset.c, c=ESEATS[i].c[j]; return ["Call seat",{electorate:ESEATS[i].n, candidate:c.nm, party:plab(c), action:state.locks[i]===j?"uncall":"call"}]; }],
     [".why .src a", b=>["Seat source",{electorate:b.closest(".seat")?.querySelector(".name")?.textContent||"", source:txt(b)}]],
+    ["#shareBtn, #dockShare", b=>["Open share",{from:b.id==="dockShare"?"pinned bar":"forecast"}]],
+    ["#shareDlg [data-to]", b=>["Share",{to:b.dataset.to, settings:shareMode()}]],
+    ["#cfgReset", ()=>["Reset to standard forecast",{from:SHARED?"shared link":"own changes"}]],
     ["#presets button", b=>["Seat preset",{preset:txt(b)}]],
     ["#clearLocks", ()=>["Clear calls"]],
     ["#oppSide button", b=>["Opportunity side",{side:BLOCS[b.dataset.b]}]],
@@ -2297,6 +2475,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
     ['a[href*="github.com/DanCRichards/nzpolls/issues"]', ()=>["Open GitHub issue"]],
     ['a[href^="http"]', a=>["Outbound link",{url:a.hostname+a.pathname}]],
   ];
+  if(SHARED) track("Opened shared link",{changes:describeConfig(cfgChanges(SHARED)).length});
   document.addEventListener("click",e=>{ for(const [sel,f] of CLICK){ const el=on(sel,e.target); if(el){ const r=f(el); if(r) track(r[0],r[1]); return; } } },true);
   const v=id=>document.getElementById(id);
   const CHANGE={

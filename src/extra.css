@@ -509,3 +509,27 @@ details.diff a{color:var(--chamber)}
 .comments .hint a{color:var(--chamber);font-weight:600}
 #commentsBox{min-height:120px}
 #commentsBox .utterances{max-width:100%}
+
+/* sharing: settings banner and share dialog */
+.cfgbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:flex-start;justify-content:space-between;margin:4px 0 12px;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:10px;background:var(--bg);font-size:.86rem}
+.cfgbar.shared{border-left-color:var(--chamber);background:var(--chamber-soft)}
+.cfgbar ul{margin:4px 0 0;padding-left:18px}
+.cfgbar li{margin:1px 0}
+.cfgtxt{flex:1 1 260px;min-width:0}
+.cfgbtns{display:flex;gap:6px;flex:none}
+.cfgbtns .btn{background:var(--surface)}
+.sharerow{margin-top:12px}
+.sharebody{padding:12px 18px 18px;display:grid;gap:8px}
+.sharewhat{border:0;padding:0;margin:0;display:grid;gap:8px}
+.sharewhat legend{font-weight:600;margin-bottom:4px}
+.sharewhat label{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.sharewhat label:has(input:checked){border-color:var(--chamber);background:var(--chamber-soft)}
+.sharewhat input{margin-top:3px}
+.sharewhat .thr{display:block;font-size:.8rem}
+.sharelab{font-weight:600;font-size:.85rem;margin-top:4px}
+.sharetext,.shareurl input{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font:inherit;font-size:.85rem;background:var(--surface);color:var(--ink);min-width:0}
+.shareurl{display:flex;gap:6px}
+.shareurl .btn{white-space:nowrap}
+.sharetext{resize:vertical}
+.shareurl input{color:var(--muted)}
+.sharebtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}

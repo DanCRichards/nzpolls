@@ -21,16 +21,16 @@ export function headConstants() {
 
 /**
  * Open dist/index.html in headless Chromium with third-party scripts blocked, and wait until the
- * first full simulation has finished. Returns { browser, page, errors }; page errors are collected.
+ * first full simulation has finished. `search` is a query string such as "?s=…" (a shared link). Returns { browser, page, errors }; page errors are collected.
  */
-export async function openPage({ viewport = { width: 1280, height: 900 } } = {}) {
+export async function openPage({ viewport = { width: 1280, height: 900 }, search = "" } = {}) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport });
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.route(/fonts\.(googleapis|gstatic)|umami\.is|buymeacoffee|utteranc\.es/, (r) => r.abort());
   await page.addInitScript(() => { window.__events = []; window.umami = { track: (n, d) => window.__events.push([n, d]) }; });
-  await page.goto("file://" + join(ROOT, "dist", "index.html"));
+  await page.goto("file://" + join(ROOT, "dist", "index.html") + search);
   await settled(page);
   return { browser, page, errors };
 }
