@@ -10,7 +10,10 @@ python3 data/map.py    # only after replacing files in data/boundaries/ (needs p
 python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
 npm install && npm test   # builds, then runs the test suite (needs Node 22; Playwright drives Chromium)
+python3 build.py --preview   # the test copy for nzpolls.co.nz/preview/: noindex, no analytics, share links stay on /preview/
 ```
+
+**Previews:** every push to a `claude/**` branch runs the deploy workflow (`.github/workflows/pages.yml`), which builds the live site from `main` and the branch into `/preview/`, so the branch can be tried at https://nzpolls.co.nz/preview/ before merging. The next push to `main` removes it. The `github-pages` environment must allow `claude/*` branches to deploy.
 
 `build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_SUMMARY}}` (the footer's latest-poll line) in `body.html` from the first entry in `POLLS`, so the latest poll is plain text for search engines and link previews, `{{FAQ_HTML}}` and `{{JSON_LD}}` from `faq()` and `json_ld()` (the election FAQ at the bottom of the page and the matching WebSite, WebPage, WebApplication, Event and FAQPage structured data, with answers built from the data files), and `{{BUILD_DATE}}` in `head.html`. Keep the FAQ text and structured data coming from the same `faq()` list so they always match. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
 

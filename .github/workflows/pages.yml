@@ -1,8 +1,11 @@
 name: Deploy to GitHub Pages
 
+# The live site is always built from main. A push to a claude/** branch also deploys that
+# branch as a test copy at nzpolls.co.nz/preview/ (not indexed, no analytics); the next
+# push to main removes it.
 on:
   push:
-    branches: [main]
+    branches: [main, "claude/**"]
   workflow_dispatch:
 
 permissions:
@@ -26,13 +29,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python3 build.py
+      - name: Build the live site from main
+        run: python3 build.py && mv dist site
+      - name: Build this branch as the preview
+        if: github.ref != 'refs/heads/main'
+        run: |
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git worktree add preview-src "$GITHUB_SHA"
+          (cd preview-src && python3 build.py --preview)
+          mv preview-src/dist site/preview
+          rm -f site/preview/robots.txt site/preview/sitemap.xml
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: site
       - id: deployment
         uses: actions/deploy-pages@v4
