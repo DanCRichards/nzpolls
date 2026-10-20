@@ -12,6 +12,7 @@ const RANK = {}; Object.entries(LISTS).forEach(([c,l])=>{ RANK[c]={}; l.forEach(
 const STAND = {}; ESEATS.forEach((s,i)=>s.c.forEach((c,j)=>{ STAND[c.p+"|"+c.nm]={i,j}; }));
 
 const POLLS = [
+ {id:"1News–Verian, 15–19 Oct",mid:"2026-10-17",inc:1,s:{NAT:32,LAB:27,GRN:16,ACT:11,NZF:8,TPM:0.7,OPP:7}},
  {id:"Freshwater, 9–19 Oct",mid:"2026-10-14",inc:1,s:{NAT:27.6,LAB:28.7,GRN:14.3,ACT:9,NZF:11.8,TPM:2,OPP:5.4}},
  {id:"1News–Verian, 8–12 Oct",mid:"2026-10-10",inc:1,s:{NAT:28,LAB:28,GRN:15,ACT:10,NZF:10,TPM:0.4,OPP:8}},
  {id:"Anacta, 6–10 Oct",mid:"2026-10-08",inc:1,s:{NAT:28,LAB:29,GRN:15,ACT:9,NZF:10,TPM:1.9,OPP:5.4}},

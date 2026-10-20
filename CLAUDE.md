@@ -83,6 +83,6 @@ On phones only, a small "Change the forecast" pill (`#scrollCue`) appears at the
 
 ## Data notes
 
-- Polls are to 19 October 2026 (published). Add new ones to `POLLS` in `head.js` in order of fieldwork, newest first, with a `mid` date; the first entry is the default. Also update the "Polls to" date in the footer note in `body.html`.
+- Polls are to 20 October 2026 (published). Add new ones to `POLLS` in `head.js` in order of fieldwork, newest first, with a `mid` date; the first entry is the default. Also update the "Polls to" date in the footer note in `body.html`.
 - Electorate starting weights come from 2023 results (notional for new boundaries), adjusted for retirements and the published electorate polls named in each seat's `note`. They are estimates, not published forecasts.
 - Electorate polls in use (see each seat's `note`): Auckland Central, Hutt South, Mount Albert, and Whakaata Māori-Curia polls in six Māori seats (all but Tāmaki Makaurau). When a new one comes out, update that seat's weights in `data.py` and its note, then run `data.py` and `build.py`.
