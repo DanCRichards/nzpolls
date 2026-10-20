@@ -9,6 +9,7 @@ python3 data/data.py   # only after editing seats, candidates or party lists in 
 python3 data/map.py    # only after replacing files in data/boundaries/ (needs pip install shapely pyproj)
 python3 build.py       # always, after any change: writes dist/index.html
 open dist/index.html   # no server needed; the page is fully self-contained
+npm install && npm test   # builds, then runs the test suite (needs Node 22; Playwright drives Chromium)
 ```
 
 `build.py` checks `src/body.html` for unbalanced tags before building. It also fills `{{POLL_SUMMARY}}` (the footer's latest-poll line) in `body.html` from the first entry in `POLLS`, so the latest poll is plain text for search engines and link previews, `{{FAQ_HTML}}` and `{{JSON_LD}}` from `faq()` and `json_ld()` (the election FAQ at the bottom of the page and the matching WebSite, WebPage, WebApplication, Event and FAQPage structured data, with answers built from the data files), and `{{BUILD_DATE}}` in `head.html`. Keep the FAQ text and structured data coming from the same `faq()` list so they always match. Past breakages came from moving blocks of markup and leaving a stray or missing `</div>`, so keep that check passing.
@@ -31,6 +32,19 @@ open dist/index.html   # no server needed; the page is fully self-contained
 | `data/NZ_2026_Poll_Seat_Tracker.xlsx` | Companion spreadsheet: Sainte-Laguë seat calculator and poll log |
 | `static/` | Icons (`favicon.ico`, `favicon.svg`, `favicon-96.png`, `apple-touch-icon.png`, `icon-192/512.png`, maskable 512), `site.webmanifest` and `og.png` (the 1200×630 link-preview image). Copied into `dist/` by the build |
 | `dist/` | Built output: `index.html`, the `static/` files, and generated `robots.txt` and `sitemap.xml` |
+
+## Tests
+
+`npm test` builds the page, then runs `tests/*.test.mjs` with Node's built-in test runner. GitHub Actions runs the same suite on every pull request (`.github/workflows/tests.yml`), and the deploy workflow runs it first and stops if anything fails.
+
+| File | What it checks |
+|---|---|
+| `tests/data.test.mjs` | Data integrity without a browser: 71 electorates, weights add to 100, party codes, lists, map outlines match the seats, polls newest-first with every party present, the poll average, trend, presets |
+| `tests/build.test.mjs` | The built page: no unfilled `{{…}}` placeholders, JSON-LD parses and its FAQ matches the visible FAQ, latest-poll line, icons, manifest, robots.txt and sitemap.xml |
+| `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, simulations-off |
+| `tests/ui.test.mjs` | The page as a visitor uses it: default poll, every poll runs, calling and uncalling a seat, the map, reset, analytics events, no page errors |
+
+`tests/helpers.mjs` opens `dist/index.html` with third-party scripts blocked and waits for the first full simulation (`settled()`). Top-level `const`s such as `state`, `ESEATS` and `SEAT_IDX` are reachable from `page.evaluate`. When you change a rule (for example how seats are allocated), add or update a test for it. When you add a poll, the data tests check it's in the right place.
 
 ## How it works
 
