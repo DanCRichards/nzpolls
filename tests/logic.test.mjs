@@ -164,6 +164,24 @@ test("with simulations off, the result is the poll exactly as published", async 
   for (const c of Object.keys(r.sim)) assert.equal(r.sim[c], r.direct[c], `${c}: simulation ${r.sim[c]} vs direct ${r.direct[c]}`);
 });
 
+test("the drawn Parliament always shows the most likely outcome", async () => {
+  // near a tipping point the run closest to every party's middle result can land on the other side of the majority line
+  const bad = await run(async () => {
+    const saved = { oppMode: state.oppMode, squeeze: state.squeeze, shares: { ...state.shares } }, problems = [];
+    for (const poll of POLLS.slice(0, 4)) for (const sq of [0, 10, 15, 20, 30]) {
+      Object.assign(state, { shares: { ...poll.s }, oppMode: "squeeze", squeeze: sq });
+      await simulate(2000); const s = state.sim, rep = s.rep;
+      const n = [0, 0, 0]; for (let k = 0; k < s.N; k++) n[s.outc[k]]++;
+      const t = { opp: 0, und: 0, gov: 0 }; for (const c of Object.keys(rep.seats)) t[state.bloc[c]] += rep.seats[c];
+      const drawn = t.gov >= rep.majority ? 0 : t.opp >= rep.majority ? 1 : 2;
+      if (n[drawn] !== Math.max(...n)) problems.push(`${poll.id}, squeeze ${sq}: drawn outcome ${drawn}, counts ${n}`);
+    }
+    Object.assign(state, saved); await simulate();
+    return problems;
+  });
+  assert.deepEqual(bad, []);
+});
+
 test("no page errors while running the logic tests", () => {
   assert.deepEqual(errors, []);
 });

@@ -41,8 +41,8 @@ npm install && npm test   # builds, then runs the test suite (needs Node 22; Pla
 |---|---|
 | `tests/data.test.mjs` | Data integrity without a browser: 71 electorates, weights add to 100, party codes, lists, map outlines match the seats, polls newest-first with every party present, the poll average, trend, presets, seat sources |
 | `tests/build.test.mjs` | The built page: no unfilled `{{…}}` placeholders, JSON-LD parses and its FAQ matches the visible FAQ, latest-poll line, icons, manifest, robots.txt and sitemap.xml |
-| `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, simulations-off |
-| `tests/ui.test.mjs` | The page as a visitor uses it: default poll, every poll runs, calling and uncalling a seat, the map, reset, analytics events, no page errors |
+| `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, the drawn Parliament matching the most likely outcome, simulations-off |
+| `tests/ui.test.mjs` | The page as a visitor uses it: default poll, every poll runs, the simulation count, seat sources, calling and uncalling a seat, the map, the why-our-numbers-differ table, reset, analytics events, no page errors |
 
 `tests/helpers.mjs` opens `dist/index.html` with third-party scripts blocked and waits for the first full simulation (`settled()`). Top-level `const`s such as `state`, `ESEATS` and `SEAT_IDX` are reachable from `page.evaluate`. When you change a rule (for example how seats are allocated), add or update a test for it. When you add a poll, the data tests check it's in the right place.
 
@@ -65,7 +65,7 @@ The random seed is fixed, so identical inputs give identical results. That's del
 
 **Results (`state.sim`)** are typed arrays with one slot per run: seats per party, independent seats, House size, outcome (0 National-led majority, 1 Labour-led, 2 neither), factor flags, per-candidate seat wins (`seatWin`), and per-rank list entries (`listIn`). Every percentage on the page is a count from these. Custom blocs reuse them, so they update without a rerun.
 
-**`sim.rep` is the Parliament drawn on screen:** the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.
+**`sim.rep` is the Parliament drawn on screen:** among runs with the most likely outcome (`sim.topOut`, so the diagram never contradicts the odds), the stored run closest to the middle result for every party, the overall House size, and National's electorates and entitlement, with ties broken by the most plausible electorate results. The National card, list tables and seat diagram all describe this same run so they agree.
 
 ## Page sections
 
@@ -78,8 +78,9 @@ Above it, a short intro (date and countdown, title, one line). Keep it short so 
 5. **More tools:** the all-party chart of what extra votes would do.
 6. **Traditional government blocs:** which bloc each other party sits in.
 7. **Custom blocs:** saved in localStorage under `nzSeatForecast.customBlocs.v1`.
-8. **Election FAQ** (collapsed `details#faq`), then the footer with the latest poll, the coffee link and sources.
-9. **Comments and suggestions:** utterances comments stored as GitHub issues on `DanCRichards/nzpolls` (one issue titled "Comments on nzpolls.co.nz", label `comment`), plus a link to open a new issue. The widget loads only when the section scrolls near the screen. Needs the utterances GitHub app installed on the repo.
+8. **Why our numbers differ** (collapsed `details#diff`): six modelling choices that set this forecast apart from Kiwi Polls, the Herald–Motu Poll of Polls, election2026.nz and Poliwave, with live figures, and a table that reruns 2,000 simulations per row changing one choice at a time from the current settings (`drawDiff()`, run only while open; each row runs in one task via `simulate(n,null,null,true)` and restores `state`).
+9. **Election FAQ** (collapsed `details#faq`), then the footer with the latest poll, the coffee link and sources.
+10. **Comments and suggestions:** utterances comments stored as GitHub issues on `DanCRichards/nzpolls` (one issue titled "Comments on nzpolls.co.nz", label `comment`), plus a link to open a new issue. The widget loads only when the section scrolls near the screen. Needs the utterances GitHub app installed on the repo.
 
 A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
 
