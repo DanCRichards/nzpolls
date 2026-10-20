@@ -44,6 +44,31 @@ test("a shared link opens with the sharer's settings and odds, says so, and rese
   assert.deepEqual(errors, []);
 });
 
+test("after opening a link, the panel follows your changes, drops the link, and hides when nothing differs", async () => {
+  const { page: p, errors } = await page(link.slice(link.indexOf("?")));
+  const bar = () => p.evaluate(() => ({ hidden: document.getElementById("cfgBar").hidden, text: document.getElementById("cfgBar").textContent.replace(/\s+/g, " "), search: location.search }));
+  await p.selectOption("#scenario", "0"); await wait(p);
+  let b = await bar();
+  assert.equal(b.search, "", "the link no longer describes the page, so it leaves the address");
+  assert.match(b.text, /You've changed 2 things/);
+  assert.doesNotMatch(b.text, /Poll average|someone shared/);
+  // put the rest back by hand: no changes left, so no panel
+  await p.click('#oppSide button[data-b="und"]'); await wait(p);
+  await p.evaluate(() => { state.locks = {}; update(); }); await wait(p);
+  b = await bar();
+  assert.equal(b.hidden, true);
+  assert.equal(b.text.trim(), "");
+  assert.deepEqual(errors, []);
+});
+
+test("every Reset button goes back to the standard forecast, called seats and blocs included", async () => {
+  const { page: p, errors } = await page(link.slice(link.indexOf("?")));
+  await p.click("#resetLevers"); await wait(p);
+  const r = await p.evaluate(() => ({ hidden: document.getElementById("cfgBar").hidden, opp: state.bloc.OPP, locks: Object.keys(state.locks).length, poll: state.pollName, search: location.search }));
+  assert.deepEqual(r, { hidden: true, opp: "und", locks: 0, poll: await p.evaluate(() => POLLS[0].id), search: "" });
+  assert.deepEqual(errors, []);
+});
+
 test("broken or tampered links are ignored", async () => {
   const bad = { b: { LAB: "gov", OPP: "<img>" }, e: 99, n: 7, l: { Nowhere: "Nobody", Epsom: "Nobody" }, v: { NAT: "x", LAB: 500 }, t: -1e9 };
   const s = Buffer.from(JSON.stringify(bad)).toString("base64url");

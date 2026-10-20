@@ -957,7 +957,8 @@ function buildControls(){
   const sp=document.getElementById("split"); sp.oninput=()=>{ state.split=+sp.value; syncLevers(); simStatus("st-split","drag"); update(true); }; sp.onchange=()=>{ state.split=+sp.value; syncLevers(); simStatus("st-split","full"); update(); };
   document.querySelectorAll("#errSeg button").forEach(b=>b.onclick=()=>{ if(state.err!==0) state.prevErr=state.err; state.err=+b.dataset.k; if(state.err!==0) state.prevErr=state.err; syncLevers(); drawSeatList(); update(); });
   document.getElementById("corr").onchange=e=>{ state.corr=e.target.checked; update(); };
-  const doReset=()=>{ state.swing=0; state.split=0; state.trend=0; state.squeeze=0; state.oppMode="direct"; state.squeezeTo={LAB:35,NAT:25,GRN:20,NZF:10,ACT:5,NONE:5}; const st=document.getElementById("sqTo"); if(st) delete st.dataset.built; state.err=1.6; state.corr=true; state.shares={...POLLS[0].s}; state.pollBase={...POLLS[0].s}; state.pollName=POLLS[0].id; sel.value="0"; syncVotes(); syncLevers(); update(); };
+  // every reset goes all the way back to the standard forecast, called seats and blocs included
+  const doReset=()=>{ applyConfig({}); dropLink(); update(); };
   document.getElementById("resetLevers").onclick=doReset; document.getElementById("dockReset").onclick=doReset;
   document.getElementById("votes").innerHTML=PARTIES.map(p=>`<div class="prow"><span class="pn">${swatch(p.c)}${p.n}</span>
     <input type="range" min="0" max="45" step="0.1" data-p="${p.c}" aria-label="${p.n} party vote"><input type="number" min="0" max="60" step="0.1" data-p="${p.c}" aria-label="${p.n} party vote percent"></div>`).join("");
@@ -1111,7 +1112,7 @@ async function firstLoad(){
   update();
 }
 function update(quick){
-  clearTimeout(timer);
+  clearTimeout(timer); drawCfgBar();
   const wrap=document.getElementById("chamberwrap"), sec=document.getElementById("simSection");
   wrap.classList.add("busy"); sec.classList.add("busy");
   const before=quick?null:(lastSnap||snapshot());
@@ -1229,16 +1230,14 @@ function describeConfig(c){
 }
 function drawCfgBar(){
   const bar=document.getElementById("cfgBar"), now=cfgChanges(readConfig()), list=describeConfig(now);
-  const fromLink=SHARED&&JSON.stringify(now)===JSON.stringify(cfgChanges(SHARED));
-  if(!list.length&&!SHARED){ bar.hidden=true; return; }
+  // once the visitor changes anything (or is back to the standard forecast), the link no longer describes the page
+  if(SHARED&&(!list.length||JSON.stringify(now)!==JSON.stringify(cfgChanges(SHARED)))) dropLink();
+  if(!list.length){ bar.hidden=true; bar.innerHTML=""; return; }
   bar.hidden=false; bar.classList.toggle("shared",!!SHARED);
-  const head= fromLink?`<b>You're looking at a forecast someone shared.</b> ${list.length?`It changes ${list.length} thing${list.length>1?"s":""} from the standard forecast:`:"It uses the standard settings."}`
-    : SHARED?`<b>A shared forecast, plus your own changes.</b> ${list.length?`Different from the standard forecast:`:"You're back to the standard settings."}`
-    : `<b>You've changed ${list.length} thing${list.length>1?"s":""} from the standard forecast:</b>`;
-  bar.innerHTML=`<div class="cfgtxt">${head}${list.length?`<ul>${list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}</div>
-    <div class="cfgbtns">${list.length?`<button class="btn" id="cfgReset" type="button">Reset to the standard forecast</button>`:""}${SHARED&&!list.length?`<button class="btn" id="cfgDismiss" type="button">Dismiss</button>`:""}</div>`;
-  const rs=document.getElementById("cfgReset"); if(rs) rs.onclick=()=>{ applyConfig({}); dropLink(); update(); };
-  const ds=document.getElementById("cfgDismiss"); if(ds) ds.onclick=()=>{ dropLink(); drawCfgBar(); };
+  const n=`${list.length} thing${list.length>1?"s":""}`;
+  bar.innerHTML=`<div class="cfgtxt">${SHARED?`<b>You're looking at a forecast someone shared.</b> It changes ${n} from the standard forecast:`:`<b>You've changed ${n} from the standard forecast:</b>`}<ul>${list.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div class="cfgbtns"><button class="btn" id="cfgReset" type="button">Reset to the standard forecast</button></div>`;
+  document.getElementById("cfgReset").onclick=()=>{ applyConfig({}); dropLink(); update(); };
 }
 function dropLink(){ SHARED=null; try{ const u=new URL(location.href); if(u.searchParams.has("s")){ u.searchParams.delete("s"); history.replaceState(null,"",u.pathname+u.search+u.hash); } }catch(e){} }
 function applySharedLink(){
