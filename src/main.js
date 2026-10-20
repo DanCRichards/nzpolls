@@ -1115,6 +1115,17 @@ window.addEventListener("resize",()=>{ placeMaj(document.getElementById("blocs")
   const io=new IntersectionObserver(es=>es.forEach(e=>{ const on=!e.isIntersecting && e.boundingClientRect.top<0; dock.classList.toggle("on",on); dock.setAttribute("aria-hidden",!on); }),{threshold:0});
   io.observe(target); })();
 
+/* ---------- comments ---------- */
+// GitHub-issue comments (utterances), loaded only when the section nears the screen so it never slows the forecast.
+(function(){ const box=document.getElementById("commentsBox"); if(!box||!("IntersectionObserver" in window)) return;
+  const io=new IntersectionObserver(es=>{ if(!es.some(e=>e.isIntersecting)) return; io.disconnect();
+    const s=document.createElement("script"); s.src="https://utteranc.es/client.js"; s.async=true; s.crossOrigin="anonymous";
+    for(const [k,v] of Object.entries({"repo":"DanCRichards/nzpolls","issue-term":"Comments on nzpolls.co.nz","label":"comment","theme":"preferred-color-scheme"})) s.setAttribute(k,v);
+    s.onload=()=>{ const l=document.getElementById("commentsLoading"); if(l) l.remove(); };
+    s.onerror=()=>{ const l=document.getElementById("commentsLoading"); if(l) l.textContent="Comments couldn't load. Use the GitHub link above instead."; };
+    box.appendChild(s); },{rootMargin:"400px"});
+  io.observe(box); })();
+
 /* ---------- analytics ---------- */
 // Umami (loaded in head.html, counts only on nzpolls.co.nz). One listener maps controls to named events,
 // so tracking never touches the forecast logic. Sliders report on release, not while dragging.
@@ -1142,6 +1153,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
     ["#addBloc", ()=>["Add custom bloc",{bloc:"blank"}]],
     [".pseg", g=>["Party bar",{party:NAMES[g.dataset.p]}]],
     [".pop [data-go]", b=>["Popup button",{button:txt(b)}]],
+    ['a[href*="github.com/DanCRichards/nzpolls/issues"]', ()=>["Open GitHub issue"]],
     ['a[href^="http"]', a=>["Outbound link",{url:a.hostname+a.pathname}]],
   ];
   document.addEventListener("click",e=>{ for(const [sel,f] of CLICK){ const el=on(sel,e.target); if(el){ const r=f(el); if(r) track(r[0],r[1]); return; } } },true);

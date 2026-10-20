@@ -65,6 +65,7 @@ Above it, a short intro (date and countdown, title, one line). Keep it short so 
 6. **Traditional government blocs:** which bloc each other party sits in.
 7. **Custom blocs:** saved in localStorage under `nzSeatForecast.customBlocs.v1`.
 8. **Election FAQ** (collapsed `details#faq`), then the footer with the latest poll, the coffee link and sources.
+9. **Comments and suggestions:** utterances comments stored as GitHub issues on `DanCRichards/nzpolls` (one issue titled "Comments on nzpolls.co.nz", label `comment`), plus a link to open a new issue. The widget loads only when the section scrolls near the screen. Needs the utterances GitHub app installed on the repo.
 
 A pinned bar appears once the seat diagram scrolls off screen, with a mini diagram, odds, party bar and Reset.
 
