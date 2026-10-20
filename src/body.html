@@ -301,6 +301,33 @@
     <div class="presets" style="margin-top:10px"><button class="btn primary" id="addBloc">Add a bloc</button></div>
   </section>
 
+  <details class="diff" id="diff">
+    <summary>Why this forecast's numbers differ from other forecasts</summary>
+    <p class="hint">Other New Zealand forecasts, such as <a href="https://www.kiwipolls.co.nz/" target="_blank" rel="noopener">Kiwi Polls</a>, the <a href="https://www.nzherald.co.nz/nz/herald-motu-research-poll-of-polls-nzs-2026-election-result-forecaster/premium/4SDHPCJ6GVCFBPWZ5V3SDXW3GA/" target="_blank" rel="noopener">Herald–Motu Poll of Polls</a>, <a href="https://election2026.nz/" target="_blank" rel="noopener">election2026.nz</a> and <a href="https://www.poliwave.com/about/methodology" target="_blank" rel="noopener">Poliwave</a>, often give different odds. That's mostly down to a handful of modelling choices, not one of them being wrong. Here's each one, and how much it moves the numbers on your current settings.</p>
+
+    <h3>1. It starts from one poll, not an average</h3>
+    <p>Most other forecasts start from an average of recent polls. This one starts from whichever poll is picked at the top, the latest by default, so a single poll that moves a few points moves the whole page. <span id="diffPoll"></span> Choose the poll average in the poll menu to compare like with like.</p>
+
+    <h3>2. It doesn't correct for each pollster's lean</h3>
+    <p>Some pollsters run a little high or low for particular parties. The Herald–Motu Poll of Polls and election2026.nz adjust for that using past elections; this forecast takes every poll as published. That explains some of the gap, especially for smaller parties.</p>
+
+    <h3>3. It counts overhang seats</h3>
+    <p>When a party wins more electorates than its party vote earns, it keeps them and Parliament grows past 120, which raises the number of seats needed to govern. <span id="diffOver"></span> The Herald–Motu Poll of Polls assumes a 120-seat House, which helps whichever side doesn't benefit from overhang.</p>
+
+    <h3>4. Kingmakers aren't counted on either side</h3>
+    <p>A "National-led" or "Labour-led" majority here means that side's traditional bloc alone has a majority. <span id="diffKing"></span> Forecasts that report named coalitions, such as the Herald–Motu Poll of Polls, put those parties with one side, which can move the odds a long way. You can change any party's side in the blocs section above.</p>
+
+    <h3>5. Every electorate is simulated candidate by candidate</h3>
+    <p>Each of the 71 seats is decided in every simulated election, starting from 2023 results and the published electorate polls linked on each seat card, then nudged by the party vote. Poliwave and others apply a uniform swing from the last election instead. On recent polls National is close to winning more electorates than its party vote earns, and Te Pāti Māori usually does, so single electorates can change the size of the House and who governs.</p>
+
+    <h3>6. The size of polling misses is fixed</h3>
+    <p>This forecast assumes a typical New Zealand polling error unless you change it. election2026.nz widens its uncertainty the further away the election is.</p>
+
+    <h3>What each choice does to the odds</h3>
+    <p class="thr">Each row changes one thing from your current settings and reruns the same simulated elections, so the difference comes only from that change.</p>
+    <div id="diffTable"><p class="thr">Opens with the numbers once the simulations have run.</p></div>
+  </details>
+
   <details class="faq" id="faq">
     <summary>Questions about the 2026 election and this forecast</summary>
 {{FAQ_HTML}}

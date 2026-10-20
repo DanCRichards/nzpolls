@@ -32,6 +32,14 @@ test("every poll in the picker, and the average, runs cleanly", async () => {
   await page.selectOption("#scenario", "0"); await settled(page);
 });
 
+test("changing the number of simulations runs that many in full", async () => {
+  for (const v of ["1000", "20000", "5000"]) {
+    await page.selectOption("#nsim", v); await page.waitForTimeout(250); await settled(page);
+    assert.equal(await page.evaluate(() => state.sim.N), +v);
+    assert.equal(await page.$eval("#chamberwrap", (e) => e.classList.contains("busy")), false, `still greyed out after ${v}`);
+  }
+});
+
 test("calling a seat fixes it for that candidate, and calling again hands it back", async () => {
   await page.selectOption("#seatFilter", "all");
   const card = page.locator("#seatList .seat", { has: page.locator(".name", { hasText: /^Epsom$/ }) });
@@ -58,6 +66,23 @@ test("the map draws every electorate and selecting one shows its candidates", as
   assert.equal(await page.$$eval("#seatMap path.el", (p) => p.length), 7, "switches to the Māori layer");
   assert.equal((await page.textContent("#mapSide .seathead .name")).trim(), "Waiariki");
   await page.click('#seatView button[data-v="list"]');
+});
+
+test("the why-our-numbers-differ section fills in live figures and its comparison table", async () => {
+  await page.click("#diff > summary");
+  await page.waitForSelector("#diffTable table", { timeout: 30000 });
+  const rows = await page.$$eval("#diffTable tbody tr", (r) => r.map((x) => [...x.cells].map((c) => c.textContent)));
+  assert.ok(rows.length >= 5);
+  assert.equal(rows[0][0], "Your current settings");
+  for (const r of rows) {
+    const total = r.slice(1).reduce((a, c) => a + (parseFloat(c.replace(/^</, "")) || 0), 0);
+    assert.ok(total >= 97 && total <= 103, `${r[0]}: odds add to ${total}`);
+  }
+  assert.match(await page.textContent("#diffOver"), /\d/);
+  assert.ok((await page.textContent("#diffKing")).length > 10);
+  // the comparison runs leave the page's own results alone
+  assert.equal(await page.evaluate(() => state.sim.N), parseInt(await page.$eval("#nsim", (e) => e.value), 10));
+  await page.click("#diff > summary");
 });
 
 test("reset puts every control back to the latest poll", async () => {

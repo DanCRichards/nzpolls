@@ -73,7 +73,7 @@ function blocTotals(seats){ const t={opp:0,und:0,gov:0}; [...PARTIES,OTH].forEac
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 function makeNormal(rand){let spare=null;return function(){ if(spare!==null){const v=spare;spare=null;return v;} let u=0,v=0;while(u===0)u=rand();v=rand();const m=Math.sqrt(-2*Math.log(u));spare=m*Math.sin(2*Math.PI*v);return m*Math.cos(2*Math.PI*v);};}
 let SIMTOKEN=0;
-async function simulate(nOverride, onProgress, token){
+async function simulate(nOverride, onProgress, token, sync){
   const OFF=state.err===0, N=OFF?1:(nOverride||parseInt(document.getElementById("nsim").value,10)), k=state.err, corr=OFF?false:state.corr, SH=eff();
   const rand=mulberry32(20261107), norm=makeNormal(rand);
   const codes=PARTIES.map(p=>p.c), P=codes.length, pidx=Object.fromEntries(codes.map((c,i)=>[c,i]));
@@ -94,7 +94,7 @@ async function simulate(nOverride, onProgress, token){
   const touched=[], splitF=Math.exp(BETA*state.split), sdBloc=0.012*k/1.6*1.6, indep=corr?0.75:1;
   const CH=400;
   for(let s=0;s<N;s++){
-    if(s>0 && s%CH===0){ if(onProgress) onProgress(s/N); await new Promise(r=>setTimeout(r,0)); if(token!=null && token!==SIMTOKEN) return false; }
+    if(!sync && s>0 && s%CH===0){ if(onProgress) onProgress(s/N); await new Promise(r=>setTimeout(r,0)); if(token!=null && token!==SIMTOKEN) return false; }
     for(let i=0;i<P;i++){ const p=base[i]; const sd=indep*k*Math.sqrt(Math.max(p*(1-p),0.0004)/1000); sh[i]=Math.max(0,p+sd*norm()); }
     const zb=norm(); // always drawn, so every setting replays the same random numbers
     if(corr && govBase>0 && oppBase>0){ const b=sdBloc*zb; govI.forEach(i=>sh[i]=Math.max(0,sh[i]+b*base[i]/govBase)); oppI.forEach(i=>sh[i]=Math.max(0,sh[i]-b*base[i]/oppBase)); }
@@ -141,10 +141,15 @@ async function simulate(nOverride, onProgress, token){
   const totCount={}; for(let s=0;s<N;s++) totCount[totS[s]]=(totCount[totS[s]]||0)+1;
   // aim for the House size implied by each party's middle result, so the picture never adds seats nobody is likely to win
   const modeTot=medS.reduce((a,b)=>a+b,0)+medO;
-  // closest run to the middle result; among ties, the one whose electorate results are most plausible
+  // most likely outcome (ties go National-led, then Labour-led); the drawn Parliament must show it, so it never contradicts the odds
+  const outN=[0,0,0]; for(let s=0;s<N;s++) outN[outc[s]]++;
+  const topOut=outN.indexOf(Math.max(...outN));
+  const pool=new Uint8Array(STORE); let inPool=0; for(let s=0;s<STORE;s++) if(outc[s]===topOut){ pool[s]=1; inPool++; }
+  if(!inPool) pool.fill(1);
+  // closest run to the middle result among those; among ties, the one whose electorate results are most plausible
   const dist=new Float64Array(STORE); let bestD=1e9;
   const medEN=med(entNat), medEL=med(elecNat);
-  for(let s=0;s<STORE;s++){ let d=20*Math.abs(othS[s]-medO)+20*Math.abs(totS[s]-modeTot)+Math.abs(entNat[s]-medEN)+Math.abs(elecNat[s]-medEL); for(let i=0;i<P;i++) d+=Math.abs(seatsS[i][s]-medS[i]); dist[s]=d; if(d<bestD) bestD=d; }
+  for(let s=0;s<STORE;s++){ if(!pool[s]){ dist[s]=1e9; continue; } let d=20*Math.abs(othS[s]-medO)+20*Math.abs(totS[s]-modeTot)+Math.abs(entNat[s]-medEN)+Math.abs(elecNat[s]-medEL); for(let i=0;i<P;i++) d+=Math.abs(seatsS[i][s]-medS[i]); dist[s]=d; if(d<bestD) bestD=d; }
   const logp=ESEATS.map(se=>seatProbs(se,SH).map(p=>Math.log(Math.max(p,1e-4))));
   let best=0, bestL=-1e18;
   for(let s=0;s<STORE;s++){ if(dist[s]!==bestD) continue; let L=0; for(let si=0;si<ESEATS.length;si++) L+=logp[si][winStore[s*ESEATS.length+si]]; if(L>bestL){bestL=L;best=s;} }
@@ -154,7 +159,7 @@ async function simulate(nOverride, onProgress, token){
   const natHist={}; for(let s=0;s<N;s++) natHist[elecNat[s]]=(natHist[elecNat[s]]||0)+1;
   state.sim={N,k,corr,off:OFF,codes,seatsS,othS,totS,outc,fOpp,fNat,fBloc,fTpm,fOth,inParl,seatWin,listIn,medS,medO,
     ranges:codes.map((c,i)=>[q(seatsS[i],0.1),q(seatsS[i],0.9)]),
-    rep:{winners:repW,seats:repSeats,total:repTotal,majority:Math.floor(repTotal/2)+1,entNat:entNat[best],elecNat:elecNat[best]},
+    outN,topOut,rep:{winners:repW,seats:repSeats,total:repTotal,majority:Math.floor(repTotal/2)+1,entNat:entNat[best],elecNat:elecNat[best]},
     modeTot,modeTotP:(totCount[modeTot]||0)/N,natHist,medEntNat:med(entNat),medElecNat:med(elecNat)};
   return true;
 }
@@ -228,7 +233,7 @@ function drawHouse(){
   // headline
   const N=sim.N, pc=a=>a/N; let g=0,o2=0,hu=0; for(let s=0;s<N;s++){ if(sim.outc[s]===0)g++; else if(sim.outc[s]===1)o2++; else hu++; }
   const outs=[[g,"National-led majority","var(--NAT)"],[o2,"Labour-led majority","var(--LAB)"],[hu,"Neither has a majority: kingmakers decide","var(--OTH)"]];
-  const top=outs.slice().sort((a,b)=>b[0]-a[0])[0];
+  const top=outs[sim.topOut];
   const vt={0:"a National-led majority",1:"a Labour-led majority",2:"neither side has a majority, so the kingmakers decide"};
   document.getElementById("verdict").textContent=`Most likely: ${vt[outs.indexOf(top)]} (${fmtP(pc(top[0]))} of simulations).`;
   document.getElementById("odds").innerHTML=outs.map(([v,l,c])=>`<div class="odd" style="border-left:4px solid ${c}"><div class="big">${fmtP(pc(v))}</div><div class="lab">${l}</div></div>`).join("");
@@ -943,7 +948,7 @@ function buildControls(){
   const sel=document.getElementById("scenario");
   sel.innerHTML=`<option value="0">Latest poll: ${POLLS[0].id}</option><option value="avg">Average of ${POLLS.filter(p=>p.inc).length} polls since 1 Sep</option><optgroup label="Earlier polls">`+POLLS.slice(1).map((p,i)=>`<option value="${i+1}">${p.id}</option>`).join("")+`</optgroup>`+`<option value="custom" disabled>Custom (edited)</option>`;
   sel.onchange=()=>{ state.shares={...(sel.value==="avg"?AVG:POLLS[+sel.value].s)}; state.pollBase={...state.shares}; state.pollName=sel.value==="avg"?"Poll average":POLLS[+sel.value].id; syncVotes(); syncLevers(); update(); };
-  document.getElementById("nsim").onchange=update;
+  document.getElementById("nsim").onchange=()=>update();
   const tr=document.getElementById("trend"); tr.oninput=()=>{ state.trend=+tr.value; drawCampaign(); syncLevers(); update(true); }; tr.onchange=()=>{ state.trend=+tr.value; update(); };
   const sq=document.getElementById("squeeze"); sq.oninput=()=>{ state.squeeze=+sq.value; drawCampaign(); syncLevers(); simStatus("st-opp","drag"); update(true); }; sq.onchange=()=>{ state.squeeze=+sq.value; simStatus("st-opp","full"); update(); };
   document.getElementById("simAll").onchange=e=>{ if(e.target.checked){ state.err=state.prevErr||1.6; } else { if(state.err!==0) state.prevErr=state.err; state.err=0; } syncLevers(); drawSeatList(); update(); };
@@ -966,6 +971,7 @@ function buildControls(){
   const vp=document.getElementById("vparty"); vp.innerHTML=PARTIES.map(p=>`<option value="${p.c}">${p.n}</option>`).join(""); vp.value="OPP";
   ["vparty","vamt"].forEach(id=>document.getElementById(id).onchange=drawVotes);
   document.querySelector("details.more").addEventListener("toggle",e=>{ if(e.target.open) drawVotes(); });
+  document.getElementById("diff").addEventListener("toggle",e=>{ if(e.target.open) drawDiff(); else DIFF.run++; });
 }
 function syncLevers(){
   document.getElementById("oppVote").value=state.shares.OPP; { const a=state.shares.OPP, e=eff().OPP; document.getElementById("oppOut").textContent= Math.abs(a-e)>=0.05?`${a.toFixed(1)}% → ${e.toFixed(1)}%`:`${e.toFixed(1)}%`; }
@@ -1057,7 +1063,45 @@ const scrollCue=(()=>{ const el=document.getElementById("scrollCue"), phone=matc
   return {show:()=>{ if(done||!phone.matches||scrollY>40) return; el.hidden=false; requestAnimationFrame(()=>el.classList.add("on")); }};
 })();
 function showScrollCue(){ scrollCue.show(); }
-function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); }
+function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); drawDiffText(); queueDiff(); }
+// "Why this forecast's numbers differ": what each modelling choice does to the odds, rerun from the current settings
+const DIFF={n:2000, run:0, timer:null};
+function drawDiffText(){
+  const sim=state.sim; if(!sim) return; const N=sim.N; let big=0; for(let s=0;s<N;s++) if(sim.totS[s]>120) big++;
+  document.getElementById("diffPoll").textContent=`You're looking at ${state.pollName==="Poll average"?"the poll average":`"${state.pollName}"`}.`;
+  document.getElementById("diffOver").textContent=sim.off?`On your current settings, the House has ${sim.rep.total} seats.`:`On your current settings, the House is bigger than 120 in ${fmtP(big/N)} of simulations; the most likely size is ${sim.modeTot}.`;
+  const und=[...PARTIES,OTH].filter(p=>state.bloc[p.c]==="und").map(p=>p.c==="OTH"?"independents":NAMES[p.c]);
+  document.getElementById("diffKing").textContent=und.length?`On your current settings, the kingmakers are ${und.length>1?und.slice(0,-1).join(", ")+" and "+und.at(-1):und[0]}.`:"On your current settings, every party sits on a side.";
+}
+function diffRows(){
+  const rows=[["Your current settings",{}]], b=state.bloc.OPP;
+  rows.push(state.pollName==="Poll average"?[`Latest poll (${POLLS[0].id}) instead of the average`,{shares:{...POLLS[0].s}}]:["Poll average instead of one poll",{shares:{...AVG}}]);
+  if(b!=="opp") rows.push(["Opportunity counted on the Labour-led side",{bloc:{...state.bloc,OPP:"opp"}}]);
+  if(b!=="gov") rows.push(["Opportunity counted on the National-led side",{bloc:{...state.bloc,OPP:"gov"}}]);
+  if(b!=="und") rows.push(["Opportunity counted as a kingmaker",{bloc:{...state.bloc,OPP:"und"}}]);
+  if(state.err!==1) rows.push(["Smaller polling error (sampling error only)",{err:1}]);
+  if(state.err!==2.4) rows.push(["A big polling miss",{err:2.4}]);
+  if(state.err>0 && state.corr) rows.push(["No shared miss across each side",{corr:false}]);
+  if(state.err>0 && state.simSeats) rows.push(["Every electorate goes to its favourite",{simSeats:false}]);
+  return rows;
+}
+// one variant, run start to finish in a single task so nothing else sees the swapped settings
+function diffOdds(over){
+  const saved={}, sim=state.sim; for(const k in over){ saved[k]=state[k]; state[k]=over[k]; }
+  try{ simulate(DIFF.n,null,null,true); const s=state.sim; return s.outN.map(x=>x/s.N); }
+  finally{ Object.assign(state,saved); state.sim=sim; }
+}
+function queueDiff(){ DIFF.run++; clearTimeout(DIFF.timer); if(document.getElementById("diff").open) DIFF.timer=setTimeout(drawDiff,500); }
+function drawDiff(){
+  if(!state.sim) return; const run=++DIFF.run, rows=diffRows(), out=[], box=document.getElementById("diffTable");
+  box.innerHTML=`<p class="thr"><span class="spin" aria-hidden="true"></span> Running ${rows.length} versions of ${DIFF.n.toLocaleString()} simulated elections…</p>`;
+  const step=()=>{ if(run!==DIFF.run) return; out.push(diffOdds(rows[out.length][1])); if(out.length<rows.length) return setTimeout(step,0);
+    const d=(a,b)=>{ const v=Math.round((a-b)*100); return v===0?"":` <span class="dd">${v>0?"+":"−"}${Math.abs(v)}</span>`; };
+    box.innerHTML=`<div class="tablewrap"><table class="difft"><thead><tr><th style="text-align:left">Change</th><th>National-led majority</th><th>Labour-led majority</th><th>Kingmakers decide</th></tr></thead><tbody>${
+      rows.map(([l],i)=>`<tr${i?"":` class="base"`}><td>${esc(l)}</td>${out[i].map((x,k)=>`<td>${fmtP(x)}${i?d(x,out[0][k]):""}</td>`).join("")}</tr>`).join("")
+    }</tbody></table></div><p class="thr">${DIFF.n.toLocaleString()} simulated elections per row, so each figure is within a few points of what more runs would give. Differences are in percentage points from your current settings.</p>`; };
+  setTimeout(step,0);
+}
 // On page load, draw a quick estimate first, then refine. The seed is fixed, so the quick runs are the first runs of the full set.
 async function firstLoad(){
   const token=++SIMTOKEN, n=parseInt(document.getElementById("nsim").value,10);
@@ -1176,5 +1220,5 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
   document.addEventListener("change",e=>{ const t=e.target; if(CHANGE[t.id]){ const r=CHANGE[t.id](); track(r[0],r[1]); }
     else if(on("#votes",t)) track("Party vote edit",{party:NAMES[t.dataset.p]}); },true);
   document.addEventListener("toggle",e=>{ const d=e.target; if(!d.open) return;
-    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); },true);
+    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); else if(d.id==="diff") track("Open why numbers differ"); },true);
 })();

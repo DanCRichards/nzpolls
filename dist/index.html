@@ -639,6 +639,23 @@ details.faq > summary{cursor:pointer;font-weight:600;font-size:1.05rem;padding:8
 details.faq h3{font-size:.95rem;margin:14px 0 2px}
 details.faq p{font-size:.9rem;color:var(--muted);max-width:72ch}
 
+/* why this forecast's numbers differ */
+details.diff{margin-top:22px;border-top:1px solid var(--line);padding-top:6px}
+details.diff > summary{cursor:pointer;font-weight:600;font-size:1.05rem;padding:8px 0}
+details.diff h3{font-size:.95rem;margin:16px 0 2px}
+details.diff p{font-size:.9rem;color:var(--muted);max-width:72ch}
+details.diff a{color:var(--chamber)}
+.difft{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums}
+.difft th,.difft td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+.difft th{font-weight:600;color:var(--muted);font-size:.78rem;white-space:normal;vertical-align:bottom}
+@media (max-width:560px){.difft .dd{display:block}.difft th,.difft td{padding:6px 4px}}
+.difft td:first-child{text-align:left;white-space:normal;min-width:8em}
+.difft td:not(:first-child){white-space:nowrap}
+.difft td:not(:first-child),.difft th:not(:first-child){text-align:right}
+.difft th:not(:first-child){width:19%}
+.difft tr.base td{font-weight:600}
+.difft .dd{color:var(--muted);font-size:.78rem}
+
 /* GitHub-issue comments at the very bottom */
 .comments{margin-top:24px;padding-top:16px;border-top:1px solid var(--line)}
 .comments h2{font-size:1.15rem}
@@ -951,6 +968,33 @@ details.faq p{font-size:.9rem;color:var(--muted);max-width:72ch}
     <div class="presets" style="margin-top:10px"><button class="btn primary" id="addBloc">Add a bloc</button></div>
   </section>
 
+  <details class="diff" id="diff">
+    <summary>Why this forecast's numbers differ from other forecasts</summary>
+    <p class="hint">Other New Zealand forecasts, such as <a href="https://www.kiwipolls.co.nz/" target="_blank" rel="noopener">Kiwi Polls</a>, the <a href="https://www.nzherald.co.nz/nz/herald-motu-research-poll-of-polls-nzs-2026-election-result-forecaster/premium/4SDHPCJ6GVCFBPWZ5V3SDXW3GA/" target="_blank" rel="noopener">Herald–Motu Poll of Polls</a>, <a href="https://election2026.nz/" target="_blank" rel="noopener">election2026.nz</a> and <a href="https://www.poliwave.com/about/methodology" target="_blank" rel="noopener">Poliwave</a>, often give different odds. That's mostly down to a handful of modelling choices, not one of them being wrong. Here's each one, and how much it moves the numbers on your current settings.</p>
+
+    <h3>1. It starts from one poll, not an average</h3>
+    <p>Most other forecasts start from an average of recent polls. This one starts from whichever poll is picked at the top, the latest by default, so a single poll that moves a few points moves the whole page. <span id="diffPoll"></span> Choose the poll average in the poll menu to compare like with like.</p>
+
+    <h3>2. It doesn't correct for each pollster's lean</h3>
+    <p>Some pollsters run a little high or low for particular parties. The Herald–Motu Poll of Polls and election2026.nz adjust for that using past elections; this forecast takes every poll as published. That explains some of the gap, especially for smaller parties.</p>
+
+    <h3>3. It counts overhang seats</h3>
+    <p>When a party wins more electorates than its party vote earns, it keeps them and Parliament grows past 120, which raises the number of seats needed to govern. <span id="diffOver"></span> The Herald–Motu Poll of Polls assumes a 120-seat House, which helps whichever side doesn't benefit from overhang.</p>
+
+    <h3>4. Kingmakers aren't counted on either side</h3>
+    <p>A "National-led" or "Labour-led" majority here means that side's traditional bloc alone has a majority. <span id="diffKing"></span> Forecasts that report named coalitions, such as the Herald–Motu Poll of Polls, put those parties with one side, which can move the odds a long way. You can change any party's side in the blocs section above.</p>
+
+    <h3>5. Every electorate is simulated candidate by candidate</h3>
+    <p>Each of the 71 seats is decided in every simulated election, starting from 2023 results and the published electorate polls linked on each seat card, then nudged by the party vote. Poliwave and others apply a uniform swing from the last election instead. On recent polls National is close to winning more electorates than its party vote earns, and Te Pāti Māori usually does, so single electorates can change the size of the House and who governs.</p>
+
+    <h3>6. The size of polling misses is fixed</h3>
+    <p>This forecast assumes a typical New Zealand polling error unless you change it. election2026.nz widens its uncertainty the further away the election is.</p>
+
+    <h3>What each choice does to the odds</h3>
+    <p class="thr">Each row changes one thing from your current settings and reruns the same simulated elections, so the difference comes only from that change.</p>
+    <div id="diffTable"><p class="thr">Opens with the numbers once the simulations have run.</p></div>
+  </details>
+
   <details class="faq" id="faq">
     <summary>Questions about the 2026 election and this forecast</summary>
     <h3>When is the 2026 New Zealand election?</h3>
@@ -1125,7 +1169,7 @@ function blocTotals(seats){ const t={opp:0,und:0,gov:0}; [...PARTIES,OTH].forEac
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 function makeNormal(rand){let spare=null;return function(){ if(spare!==null){const v=spare;spare=null;return v;} let u=0,v=0;while(u===0)u=rand();v=rand();const m=Math.sqrt(-2*Math.log(u));spare=m*Math.sin(2*Math.PI*v);return m*Math.cos(2*Math.PI*v);};}
 let SIMTOKEN=0;
-async function simulate(nOverride, onProgress, token){
+async function simulate(nOverride, onProgress, token, sync){
   const OFF=state.err===0, N=OFF?1:(nOverride||parseInt(document.getElementById("nsim").value,10)), k=state.err, corr=OFF?false:state.corr, SH=eff();
   const rand=mulberry32(20261107), norm=makeNormal(rand);
   const codes=PARTIES.map(p=>p.c), P=codes.length, pidx=Object.fromEntries(codes.map((c,i)=>[c,i]));
@@ -1146,7 +1190,7 @@ async function simulate(nOverride, onProgress, token){
   const touched=[], splitF=Math.exp(BETA*state.split), sdBloc=0.012*k/1.6*1.6, indep=corr?0.75:1;
   const CH=400;
   for(let s=0;s<N;s++){
-    if(s>0 && s%CH===0){ if(onProgress) onProgress(s/N); await new Promise(r=>setTimeout(r,0)); if(token!=null && token!==SIMTOKEN) return false; }
+    if(!sync && s>0 && s%CH===0){ if(onProgress) onProgress(s/N); await new Promise(r=>setTimeout(r,0)); if(token!=null && token!==SIMTOKEN) return false; }
     for(let i=0;i<P;i++){ const p=base[i]; const sd=indep*k*Math.sqrt(Math.max(p*(1-p),0.0004)/1000); sh[i]=Math.max(0,p+sd*norm()); }
     const zb=norm(); // always drawn, so every setting replays the same random numbers
     if(corr && govBase>0 && oppBase>0){ const b=sdBloc*zb; govI.forEach(i=>sh[i]=Math.max(0,sh[i]+b*base[i]/govBase)); oppI.forEach(i=>sh[i]=Math.max(0,sh[i]-b*base[i]/oppBase)); }
@@ -1193,10 +1237,15 @@ async function simulate(nOverride, onProgress, token){
   const totCount={}; for(let s=0;s<N;s++) totCount[totS[s]]=(totCount[totS[s]]||0)+1;
   // aim for the House size implied by each party's middle result, so the picture never adds seats nobody is likely to win
   const modeTot=medS.reduce((a,b)=>a+b,0)+medO;
-  // closest run to the middle result; among ties, the one whose electorate results are most plausible
+  // most likely outcome (ties go National-led, then Labour-led); the drawn Parliament must show it, so it never contradicts the odds
+  const outN=[0,0,0]; for(let s=0;s<N;s++) outN[outc[s]]++;
+  const topOut=outN.indexOf(Math.max(...outN));
+  const pool=new Uint8Array(STORE); let inPool=0; for(let s=0;s<STORE;s++) if(outc[s]===topOut){ pool[s]=1; inPool++; }
+  if(!inPool) pool.fill(1);
+  // closest run to the middle result among those; among ties, the one whose electorate results are most plausible
   const dist=new Float64Array(STORE); let bestD=1e9;
   const medEN=med(entNat), medEL=med(elecNat);
-  for(let s=0;s<STORE;s++){ let d=20*Math.abs(othS[s]-medO)+20*Math.abs(totS[s]-modeTot)+Math.abs(entNat[s]-medEN)+Math.abs(elecNat[s]-medEL); for(let i=0;i<P;i++) d+=Math.abs(seatsS[i][s]-medS[i]); dist[s]=d; if(d<bestD) bestD=d; }
+  for(let s=0;s<STORE;s++){ if(!pool[s]){ dist[s]=1e9; continue; } let d=20*Math.abs(othS[s]-medO)+20*Math.abs(totS[s]-modeTot)+Math.abs(entNat[s]-medEN)+Math.abs(elecNat[s]-medEL); for(let i=0;i<P;i++) d+=Math.abs(seatsS[i][s]-medS[i]); dist[s]=d; if(d<bestD) bestD=d; }
   const logp=ESEATS.map(se=>seatProbs(se,SH).map(p=>Math.log(Math.max(p,1e-4))));
   let best=0, bestL=-1e18;
   for(let s=0;s<STORE;s++){ if(dist[s]!==bestD) continue; let L=0; for(let si=0;si<ESEATS.length;si++) L+=logp[si][winStore[s*ESEATS.length+si]]; if(L>bestL){bestL=L;best=s;} }
@@ -1206,7 +1255,7 @@ async function simulate(nOverride, onProgress, token){
   const natHist={}; for(let s=0;s<N;s++) natHist[elecNat[s]]=(natHist[elecNat[s]]||0)+1;
   state.sim={N,k,corr,off:OFF,codes,seatsS,othS,totS,outc,fOpp,fNat,fBloc,fTpm,fOth,inParl,seatWin,listIn,medS,medO,
     ranges:codes.map((c,i)=>[q(seatsS[i],0.1),q(seatsS[i],0.9)]),
-    rep:{winners:repW,seats:repSeats,total:repTotal,majority:Math.floor(repTotal/2)+1,entNat:entNat[best],elecNat:elecNat[best]},
+    outN,topOut,rep:{winners:repW,seats:repSeats,total:repTotal,majority:Math.floor(repTotal/2)+1,entNat:entNat[best],elecNat:elecNat[best]},
     modeTot,modeTotP:(totCount[modeTot]||0)/N,natHist,medEntNat:med(entNat),medElecNat:med(elecNat)};
   return true;
 }
@@ -1280,7 +1329,7 @@ function drawHouse(){
   // headline
   const N=sim.N, pc=a=>a/N; let g=0,o2=0,hu=0; for(let s=0;s<N;s++){ if(sim.outc[s]===0)g++; else if(sim.outc[s]===1)o2++; else hu++; }
   const outs=[[g,"National-led majority","var(--NAT)"],[o2,"Labour-led majority","var(--LAB)"],[hu,"Neither has a majority: kingmakers decide","var(--OTH)"]];
-  const top=outs.slice().sort((a,b)=>b[0]-a[0])[0];
+  const top=outs[sim.topOut];
   const vt={0:"a National-led majority",1:"a Labour-led majority",2:"neither side has a majority, so the kingmakers decide"};
   document.getElementById("verdict").textContent=`Most likely: ${vt[outs.indexOf(top)]} (${fmtP(pc(top[0]))} of simulations).`;
   document.getElementById("odds").innerHTML=outs.map(([v,l,c])=>`<div class="odd" style="border-left:4px solid ${c}"><div class="big">${fmtP(pc(v))}</div><div class="lab">${l}</div></div>`).join("");
@@ -1995,7 +2044,7 @@ function buildControls(){
   const sel=document.getElementById("scenario");
   sel.innerHTML=`<option value="0">Latest poll: ${POLLS[0].id}</option><option value="avg">Average of ${POLLS.filter(p=>p.inc).length} polls since 1 Sep</option><optgroup label="Earlier polls">`+POLLS.slice(1).map((p,i)=>`<option value="${i+1}">${p.id}</option>`).join("")+`</optgroup>`+`<option value="custom" disabled>Custom (edited)</option>`;
   sel.onchange=()=>{ state.shares={...(sel.value==="avg"?AVG:POLLS[+sel.value].s)}; state.pollBase={...state.shares}; state.pollName=sel.value==="avg"?"Poll average":POLLS[+sel.value].id; syncVotes(); syncLevers(); update(); };
-  document.getElementById("nsim").onchange=update;
+  document.getElementById("nsim").onchange=()=>update();
   const tr=document.getElementById("trend"); tr.oninput=()=>{ state.trend=+tr.value; drawCampaign(); syncLevers(); update(true); }; tr.onchange=()=>{ state.trend=+tr.value; update(); };
   const sq=document.getElementById("squeeze"); sq.oninput=()=>{ state.squeeze=+sq.value; drawCampaign(); syncLevers(); simStatus("st-opp","drag"); update(true); }; sq.onchange=()=>{ state.squeeze=+sq.value; simStatus("st-opp","full"); update(); };
   document.getElementById("simAll").onchange=e=>{ if(e.target.checked){ state.err=state.prevErr||1.6; } else { if(state.err!==0) state.prevErr=state.err; state.err=0; } syncLevers(); drawSeatList(); update(); };
@@ -2018,6 +2067,7 @@ function buildControls(){
   const vp=document.getElementById("vparty"); vp.innerHTML=PARTIES.map(p=>`<option value="${p.c}">${p.n}</option>`).join(""); vp.value="OPP";
   ["vparty","vamt"].forEach(id=>document.getElementById(id).onchange=drawVotes);
   document.querySelector("details.more").addEventListener("toggle",e=>{ if(e.target.open) drawVotes(); });
+  document.getElementById("diff").addEventListener("toggle",e=>{ if(e.target.open) drawDiff(); else DIFF.run++; });
 }
 function syncLevers(){
   document.getElementById("oppVote").value=state.shares.OPP; { const a=state.shares.OPP, e=eff().OPP; document.getElementById("oppOut").textContent= Math.abs(a-e)>=0.05?`${a.toFixed(1)}% → ${e.toFixed(1)}%`:`${e.toFixed(1)}%`; }
@@ -2109,7 +2159,45 @@ const scrollCue=(()=>{ const el=document.getElementById("scrollCue"), phone=matc
   return {show:()=>{ if(done||!phone.matches||scrollY>40) return; el.hidden=false; requestAnimationFrame(()=>el.classList.add("on")); }};
 })();
 function showScrollCue(){ scrollCue.show(); }
-function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); }
+function renderAll(){ drawHouse(); drawFactors(); drawLists(); drawSeatList(); paintMap(); drawCustom(); if(document.querySelector("details.more").open) drawVotes(); drawDiffText(); queueDiff(); }
+// "Why this forecast's numbers differ": what each modelling choice does to the odds, rerun from the current settings
+const DIFF={n:2000, run:0, timer:null};
+function drawDiffText(){
+  const sim=state.sim; if(!sim) return; const N=sim.N; let big=0; for(let s=0;s<N;s++) if(sim.totS[s]>120) big++;
+  document.getElementById("diffPoll").textContent=`You're looking at ${state.pollName==="Poll average"?"the poll average":`"${state.pollName}"`}.`;
+  document.getElementById("diffOver").textContent=sim.off?`On your current settings, the House has ${sim.rep.total} seats.`:`On your current settings, the House is bigger than 120 in ${fmtP(big/N)} of simulations; the most likely size is ${sim.modeTot}.`;
+  const und=[...PARTIES,OTH].filter(p=>state.bloc[p.c]==="und").map(p=>p.c==="OTH"?"independents":NAMES[p.c]);
+  document.getElementById("diffKing").textContent=und.length?`On your current settings, the kingmakers are ${und.length>1?und.slice(0,-1).join(", ")+" and "+und.at(-1):und[0]}.`:"On your current settings, every party sits on a side.";
+}
+function diffRows(){
+  const rows=[["Your current settings",{}]], b=state.bloc.OPP;
+  rows.push(state.pollName==="Poll average"?[`Latest poll (${POLLS[0].id}) instead of the average`,{shares:{...POLLS[0].s}}]:["Poll average instead of one poll",{shares:{...AVG}}]);
+  if(b!=="opp") rows.push(["Opportunity counted on the Labour-led side",{bloc:{...state.bloc,OPP:"opp"}}]);
+  if(b!=="gov") rows.push(["Opportunity counted on the National-led side",{bloc:{...state.bloc,OPP:"gov"}}]);
+  if(b!=="und") rows.push(["Opportunity counted as a kingmaker",{bloc:{...state.bloc,OPP:"und"}}]);
+  if(state.err!==1) rows.push(["Smaller polling error (sampling error only)",{err:1}]);
+  if(state.err!==2.4) rows.push(["A big polling miss",{err:2.4}]);
+  if(state.err>0 && state.corr) rows.push(["No shared miss across each side",{corr:false}]);
+  if(state.err>0 && state.simSeats) rows.push(["Every electorate goes to its favourite",{simSeats:false}]);
+  return rows;
+}
+// one variant, run start to finish in a single task so nothing else sees the swapped settings
+function diffOdds(over){
+  const saved={}, sim=state.sim; for(const k in over){ saved[k]=state[k]; state[k]=over[k]; }
+  try{ simulate(DIFF.n,null,null,true); const s=state.sim; return s.outN.map(x=>x/s.N); }
+  finally{ Object.assign(state,saved); state.sim=sim; }
+}
+function queueDiff(){ DIFF.run++; clearTimeout(DIFF.timer); if(document.getElementById("diff").open) DIFF.timer=setTimeout(drawDiff,500); }
+function drawDiff(){
+  if(!state.sim) return; const run=++DIFF.run, rows=diffRows(), out=[], box=document.getElementById("diffTable");
+  box.innerHTML=`<p class="thr"><span class="spin" aria-hidden="true"></span> Running ${rows.length} versions of ${DIFF.n.toLocaleString()} simulated elections…</p>`;
+  const step=()=>{ if(run!==DIFF.run) return; out.push(diffOdds(rows[out.length][1])); if(out.length<rows.length) return setTimeout(step,0);
+    const d=(a,b)=>{ const v=Math.round((a-b)*100); return v===0?"":` <span class="dd">${v>0?"+":"−"}${Math.abs(v)}</span>`; };
+    box.innerHTML=`<div class="tablewrap"><table class="difft"><thead><tr><th style="text-align:left">Change</th><th>National-led majority</th><th>Labour-led majority</th><th>Kingmakers decide</th></tr></thead><tbody>${
+      rows.map(([l],i)=>`<tr${i?"":` class="base"`}><td>${esc(l)}</td>${out[i].map((x,k)=>`<td>${fmtP(x)}${i?d(x,out[0][k]):""}</td>`).join("")}</tr>`).join("")
+    }</tbody></table></div><p class="thr">${DIFF.n.toLocaleString()} simulated elections per row, so each figure is within a few points of what more runs would give. Differences are in percentage points from your current settings.</p>`; };
+  setTimeout(step,0);
+}
 // On page load, draw a quick estimate first, then refine. The seed is fixed, so the quick runs are the first runs of the full set.
 async function firstLoad(){
   const token=++SIMTOKEN, n=parseInt(document.getElementById("nsim").value,10);
@@ -2228,7 +2316,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
   document.addEventListener("change",e=>{ const t=e.target; if(CHANGE[t.id]){ const r=CHANGE[t.id](); track(r[0],r[1]); }
     else if(on("#votes",t)) track("Party vote edit",{party:NAMES[t.dataset.p]}); },true);
   document.addEventListener("toggle",e=>{ const d=e.target; if(!d.open) return;
-    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); },true);
+    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); else if(d.id==="diff") track("Open why numbers differ"); },true);
 })();
 
 </script>
