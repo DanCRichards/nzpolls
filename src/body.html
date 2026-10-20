@@ -4,6 +4,7 @@
   <div class="dockin">
     <svg id="miniHemi" viewBox="0 0 420 222" class="mini"></svg>
     <div class="dockinfo"><p id="dockOdds"></p><div id="dockBar"></div><div class="dockcounts" id="dockCounts"></div></div>
+    <button class="dockreset" id="dockShare" title="Share this forecast">Share</button>
     <button class="dockreset" id="dockReset" title="Reset everything to the latest poll">Reset</button>
   </div>
 </div>
@@ -20,6 +21,7 @@
   <section class="chamber" id="houseSection" aria-labelledby="h-house">
     <h2 id="h-house" style="font-size:1.35rem">The most likely Parliament</h2>
     <p class="hint" id="houseHint">Running simulated elections…</p>
+    <div class="cfgbar" id="cfgBar" role="status" hidden></div>
     <div class="topctl" role="group" aria-label="Forecast settings">
       <label class="inline">Party vote from <select id="scenario"></select></label>
       <label class="inline"><span>Simulations <button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button></span>
@@ -36,6 +38,7 @@
       <div>
         <p class="verdict" id="verdict">Working out the most likely result…</p>
         <div class="odds" id="odds"><div class="odd skel"><div class="big">…</div><div class="lab">National-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Labour-led majority</div></div><div class="odd skel"><div class="big">…</div><div class="lab">Neither has a majority: kingmakers decide</div></div></div>
+        <div class="sharerow"><button class="btn primary" id="shareBtn" type="button">Share this forecast</button></div>
       </div>
     </div>
     <div class="blocs wide" id="blocs"></div>
@@ -346,6 +349,27 @@
   </section>
 </main>
 <div class="ftip" id="ftip" role="tooltip" hidden></div>
+<dialog id="shareDlg" class="dlg sharedlg" aria-labelledby="shareTitle">
+  <div class="dlghead"><h2 id="shareTitle">Share this forecast</h2><button class="btn" id="shareClose" type="button">Close</button></div>
+  <div class="sharebody">
+    <fieldset class="sharewhat" id="shareWhat">
+      <legend>What to share</legend>
+      <label><input type="radio" name="shareWhat" value="mine" checked> <span><b>My settings</b><span class="thr" id="shareMineNote"></span></span></label>
+      <label><input type="radio" name="shareWhat" value="plain"> <span><b>The standard forecast</b><span class="thr">The latest poll with everything else at the defaults.</span></span></label>
+    </fieldset>
+    <p class="thr" id="shareSame" hidden>You haven't changed anything, so the link opens the standard forecast.</p>
+    <label class="sharelab" for="shareText">Post title</label>
+    <textarea class="sharetext" id="shareText" rows="2" maxlength="280"></textarea>
+    <label class="sharelab" for="shareUrl">Link</label>
+    <div class="shareurl"><input id="shareUrl" type="text" readonly><button class="btn" id="shareCopy" type="button" data-to="copy">Copy link</button></div>
+    <div class="sharebtns">
+      <button class="btn primary" type="button" data-to="reddit">Post to Reddit</button>
+      <button class="btn" type="button" data-to="x">Post to X</button>
+      <button class="btn" type="button" data-to="bluesky">Post to Bluesky</button>
+      <button class="btn" type="button" data-to="native" id="shareNative" hidden>More…</button>
+    </div>
+  </div>
+</dialog>
 <dialog id="simPanel" class="dlg" aria-labelledby="simPanelTitle">
   <div class="dlghead"><h2 id="simPanelTitle">How the simulation works</h2><button class="btn" id="simPanelClose">Close</button></div>
   <div id="simPanelBody"></div>
