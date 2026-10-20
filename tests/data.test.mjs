@@ -81,3 +81,14 @@ test("seat presets and key seats name real electorates and candidates", () => {
     assert.ok(H.ESEATS[H.SEAT_IDX[seat]].c.some((c) => c.nm === cand), `preset "${p.n}": ${cand} isn't standing in ${seat}`);
   }
 });
+
+test("every electorate note that cites a poll or a 2023 margin links a source", () => {
+  for (const s of DATA.seats) {
+    assert.ok(Array.isArray(s.src), `${s.n} has no src list`);
+    for (const x of s.src) {
+      assert.ok(x.t && x.t.trim(), `${s.n} has a source with no title`);
+      assert.match(x.u, /^https:\/\/[^\s"<>]+$/, `${s.n} source ${x.t} isn't an https link`);
+    }
+    if (/poll|\bby \d|\d+ votes/i.test(s.note)) assert.ok(s.src.length > 0, `${s.n} cites "${s.note.slice(0, 50)}…" with no source`);
+  }
+});

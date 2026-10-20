@@ -611,7 +611,7 @@ function seatCard(i){
     : cur==null ? `<b>Not simulated</b><br>Goes to the favourite in every run.`
     : `<table class="ratetbl"><tr><th colspan="2">Chance the leader wins</th></tr>${rows.map(([k,v])=>`<tr class="${k===cur?"cur":""}"><td>${k}</td><td>${v}</td></tr>`).join("")}<tr class="this"><td>This seat</td><td>${fmtP(topP)}</td></tr></table>`;
   return `<div class="seat"><div class="seathead"><span class="name">${esc(s.n)}</span><span class="rate ${cls}" tabindex="0" data-tip="" data-tiphtml="${esc(rateTip)}">${rt}</span></div>
-    <div class="cands">${chips}</div><p class="why">Held by ${NAMES[s.held]} in 2023. ${esc(s.note)}</p>
+    <div class="cands">${chips}</div><p class="why">Held by ${NAMES[s.held]} in 2023. ${esc(s.note)}${s.src&&s.src.length?` <span class="src">Sources: ${s.src.map((x)=>`<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)}</a>`).join(", ")}</span>`:""}</p>
     <details><summary>All ${s.c.length} candidates</summary><p style="margin-top:4px">${s.c.map(c=>`${esc(c.nm)} (${esc(c.pl)})`).join(", ")}</p></details></div>`;
 }
 function drawSeatNote(){
@@ -1138,6 +1138,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
     ["#mapSet button", b=>["Map electorates",{set:b.dataset.m}]],
     ["#mapRegions button", b=>["Map zoom",{area:txt(b)}]],
     [".cand", b=>{ const i=+b.dataset.s, j=+b.dataset.c, c=ESEATS[i].c[j]; return ["Call seat",{electorate:ESEATS[i].n, candidate:c.nm, party:plab(c), action:state.locks[i]===j?"uncall":"call"}]; }],
+    [".why .src a", b=>["Seat source",{electorate:b.closest(".seat")?.querySelector(".name")?.textContent||"", source:txt(b)}]],
     ["#presets button", b=>["Seat preset",{preset:txt(b)}]],
     ["#clearLocks", ()=>["Clear calls"]],
     ["#oppSide button", b=>["Opportunity side",{side:BLOCS[b.dataset.b]}]],
