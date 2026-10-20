@@ -43,6 +43,14 @@ test("calling a seat fixes it for that candidate, and calling again hands it bac
   assert.equal(await page.evaluate(() => state.locks[SEAT_IDX["Epsom"]]), undefined);
 });
 
+test("seat notes link their sources", async () => {
+  await page.selectOption("#seatFilter", "all");
+  const card = page.locator("#seatList .seat", { has: page.locator(".name", { hasText: /^Auckland Central$/ }) });
+  const links = card.locator(".why .src a");
+  assert.ok(await links.count() >= 1);
+  assert.match(await links.first().getAttribute("href"), /^https:\/\//);
+});
+
 test("the map draws every electorate and selecting one shows its candidates", async () => {
   await page.click('#seatView button[data-v="map"]');
   assert.equal(await page.$$eval("#seatMap path.el", (p) => p.length), 64);

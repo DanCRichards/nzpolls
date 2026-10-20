@@ -39,7 +39,7 @@ npm install && npm test   # builds, then runs the test suite (needs Node 22; Pla
 
 | File | What it checks |
 |---|---|
-| `tests/data.test.mjs` | Data integrity without a browser: 71 electorates, weights add to 100, party codes, lists, map outlines match the seats, polls newest-first with every party present, the poll average, trend, presets |
+| `tests/data.test.mjs` | Data integrity without a browser: 71 electorates, weights add to 100, party codes, lists, map outlines match the seats, polls newest-first with every party present, the poll average, trend, presets, seat sources |
 | `tests/build.test.mjs` | The built page: no unfilled `{{…}}` placeholders, JSON-LD parses and its FAQ matches the visible FAQ, latest-poll line, icons, manifest, robots.txt and sitemap.xml |
 | `tests/logic.test.mjs` | The maths, using the page's own functions in Chromium: `compute()` against an independent Sainte-Laguë implementation, the 5% threshold, overhang, list exhaustion, `seatProbs()`, `eff()` and the squeeze, simulation repeatability, the quick-pass prefix, seat independence, per-run consistency, simulations-off |
 | `tests/ui.test.mjs` | The page as a visitor uses it: default poll, every poll runs, calling and uncalling a seat, the map, reset, analytics events, no page errors |
@@ -99,4 +99,5 @@ On phones only, a small "Change the forecast" pill (`#scrollCue`) appears at the
 
 - Polls are to 20 October 2026 (published). Add new ones to `POLLS` in `head.js` in order of fieldwork, newest first, with a `mid` date; the first entry is the default. Also update the "Polls to" date in the footer note in `body.html`.
 - Electorate starting weights come from 2023 results (notional for new boundaries), adjusted for retirements and the published electorate polls named in each seat's `note`. They are estimates, not published forecasts.
-- Electorate polls in use (see each seat's `note`): Auckland Central, Hutt South, Mount Albert, and Whakaata Māori-Curia polls in six Māori seats (all but Tāmaki Makaurau). When a new one comes out, update that seat's weights in `data.py` and its note, then run `data.py` and `build.py`.
+- Electorate polls in use (see each seat's `note`): Auckland Central, Hutt South, Kapiti, Mount Albert, Wellington Bays, West Coast-Tasman, Whakaata Māori-Curia polls in six Māori seats (all but Tāmaki Makaurau) and the MATA-Horizon Māori seats poll. When a new one comes out, update that seat's weights in `data.py` and its note, then run `data.py` and `build.py`.
+- Every note that cites a poll, a 2023 margin or a retirement gets a link in `SRC` in `data.py` (title and https URL), shown as "Sources:" under the seat's note. A data test fails if a poll or margin note has none. Quote poll figures as published, with the pollster, who commissioned it and fieldwork dates where known.

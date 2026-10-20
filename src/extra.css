@@ -13,6 +13,8 @@
 .cand[aria-pressed="true"]{background:var(--chamber-soft);border-color:var(--chamber);font-weight:600}
 .cand .lock{font-size:.75rem;color:var(--chamber)}
 .seat .why{font-size:.82rem;color:var(--muted);margin-top:6px}
+.seat .why .src{display:block;margin-top:3px;font-size:.76rem}
+.seat .why .src a{color:inherit;text-decoration:underline;text-decoration-color:var(--line)}
 .seat details{font-size:.82rem;color:var(--muted);margin-top:4px}
 .seat summary{cursor:pointer}
 .searchrow input[type=search]{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--surface);min-width:200px}
