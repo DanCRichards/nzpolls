@@ -1,0 +1,13 @@
+{
+  "name": "nzpolls",
+  "private": true,
+  "description": "NZ 2026 election seat forecast. The site itself has no dependencies; these are only for the tests.",
+  "type": "module",
+  "scripts": {
+    "build": "python3 build.py",
+    "test": "python3 build.py && node --test --test-concurrency=1 \"tests/*.test.mjs\""
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

@@ -16,3 +16,12 @@ See [CLAUDE.md](CLAUDE.md) for how the model and page are put together.
 Every push to `main` builds the page and deploys `dist/` to GitHub Pages via `.github/workflows/pages.yml`.
 
 One-time setup: in the repository's **Settings → Pages**, set **Source** to **GitHub Actions**. The site is then served at `https://dancrichards.github.io/nzpolls/`.
+
+## Tests
+
+```bash
+npm install
+npm test   # builds, then runs the data, build, maths and browser tests
+```
+
+The same tests run on every pull request, and the site only deploys if they pass.
