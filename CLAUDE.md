@@ -33,7 +33,7 @@ python3 build.py --preview   # the test copy for nzpolls.co.nz/preview/: noindex
 | `data/map.json` | Generated. Embedded in the page as `const MAP`: SVG paths, label points and bounding boxes per electorate |
 | `data/boundaries/` | Map sources: Stats NZ 2026 electorate boundaries (CC BY 4.0) and a LINZ coastline (CC BY 3.0 NZ) |
 | `data/NZ_2026_Poll_Seat_Tracker.xlsx` | Companion spreadsheet: Sainte-Laguë seat calculator and poll log |
-| `static/` | Icons (`favicon.ico`, `favicon.svg`, `favicon-96.png`, `apple-touch-icon.png`, `icon-192/512.png`, maskable 512), `site.webmanifest` and `og.png` (the 1200×630 link-preview image). Copied into `dist/` by the build |
+| `static/` | Icons (`favicon.ico`, `favicon.svg`, `favicon-96.png`, `apple-touch-icon.png`, `icon-192/512.png`, maskable 512), `site.webmanifest`, `og.png` (the 1200×630 link-preview image) and `BingSiteAuth.xml` (Bing Webmaster Tools ownership check; keep it at the site root). Copied into `dist/` by the build |
 | `dist/` | Built output: `index.html`, the `static/` files, and generated `robots.txt` and `sitemap.xml` |
 
 ## Tests
