@@ -26,7 +26,7 @@ test("the footer's latest-poll line names the default poll", () => {
 
 test("icons, manifest, share image, robots.txt and sitemap.xml are deployed", () => {
   for (const f of ["favicon.ico", "favicon.svg", "favicon-96.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png",
-    "icon-maskable-512.png", "site.webmanifest", "og.png", "robots.txt", "sitemap.xml"])
+    "icon-maskable-512.png", "site.webmanifest", "og.png", "robots.txt", "sitemap.xml", "BingSiteAuth.xml"])
     assert.ok(exists("dist", f), `dist/${f} is missing`);
   assert.match(read("dist", "sitemap.xml"), /<loc>https:\/\/nzpolls\.co\.nz\/<\/loc>/);
   JSON.parse(read("dist", "site.webmanifest"));
