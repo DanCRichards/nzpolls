@@ -533,3 +533,17 @@ details.diff a{color:var(--chamber)}
 .sharetext{resize:vertical}
 .shareurl input{color:var(--muted)}
 .sharebtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+
+/* latest-update note at the top (from data/updates.json): one line until opened */
+.updates{display:block;max-width:100%;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:.82rem;color:var(--muted)}
+.updates summary{cursor:pointer;list-style:none;position:relative;padding:6px 26px 6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.updates[open] summary{white-space:normal}
+.updates summary::-webkit-details-marker{display:none}
+.updates summary b{color:var(--ink)}
+.updates summary::after{content:"▾";position:absolute;right:10px;top:6px;font-size:.75rem}
+.updates[open] summary::after{content:"▴"}
+.updates time{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.updates ul{margin:0;padding:2px 12px 8px 28px;border-top:1px solid var(--line)}
+.updates li{margin:4px 0}
+.updot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--chamber);margin-right:6px;vertical-align:1px}
+@media (min-width:761px){.updates{display:inline-block}}

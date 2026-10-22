@@ -59,6 +59,24 @@ def latest_poll():
     return m.group(1), f"<b>Latest poll</b> ({html.escape(m.group(1))}): {html.escape(summary)}."
 
 
+def when(at):
+    """'2026-10-23T10:45+13:00' -> '23 Oct, 10:45am' (New Zealand time, as written in updates.json)."""
+    d = datetime.datetime.fromisoformat(at)
+    return f"{d.day} {d:%b}, {d.hour % 12 or 12}:{d:%M}{'am' if d.hour < 12 else 'pm'}"
+
+
+def updates_html():
+    """The latest-update note at the top of the page, from data/updates.json (newest first); earlier ones open below it."""
+    ups = json.loads(read("data", "updates.json"))
+    if not ups:
+        return ""
+    row = lambda u: f'<time datetime="{html.escape(u["at"])}" title="New Zealand time">{when(u["at"])}</time> {html.escape(u["text"])}'
+    first, rest = ups[0], ups[1:6]
+    more = "".join(f"\n      <li>{row(u)}</li>" for u in rest)
+    return (f'<details class="updates" id="updates">\n    <summary><span class="updot" aria-hidden="true"></span><b>Latest update</b> {row(first)}</summary>'
+            + (f'\n    <ul>{more}\n    </ul>' if rest else "") + "\n  </details>")
+
+
 def faq():
     """Questions people search for, answered from the data files. Rendered as HTML and as FAQPage structured data."""
     js = read("src", "head.js")
@@ -140,7 +158,7 @@ def main():
     today = datetime.date.today().isoformat()
     qa = faq()
     faq_html = "\n".join(f'    <h3>{html.escape(q)}</h3>\n    <p>{html.escape(a)}</p>' for q, a in qa)
-    body = body.replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton()).replace("{{FAQ_HTML}}", faq_html)
+    body = body.replace("{{UPDATES}}", updates_html()).replace("{{POLL_SUMMARY}}", poll_summary).replace("{{HEMI_SKELETON}}", hemi_skeleton()).replace("{{FAQ_HTML}}", faq_html)
     page = (read("src", "head.html").replace("{{BUILD_DATE}}", today).replace("{{JSON_LD}}", json_ld(today, qa)) + "<style>" + read("src", "base.css") + read("src", "extra.css")
             + "</style>\n</head>\n<body>\n" + body
             + "\n<script>\nconst DATA=" + read("data", "data.json") + ";\nconst MAP=" + read("data", "map.json") + ";\n"
