@@ -435,9 +435,9 @@ function drawFactors(){
   const el1=document.getElementById("s-tpm"); el1.innerHTML=tpmSeats.map(n=>seatCard(SEAT_IDX[n])).join(""); bindCards(el1);
   // OTH
   set("v-oth",`At least one wins in ${fmtP(C.oth.p)} of runs`);
-  set("l-oth",`Kapa-Kingi or Ferris wins in ${fmtP(C.oth.p)} of simulations.`);
-  set("c-oth",condBoxes(C.oth,["One of them wins","Neither wins"]));
-  const el2=document.getElementById("s-oth"); el2.innerHTML=["Te Tai Tokerau","Te Tai Tonga"].map(n=>seatCard(SEAT_IDX[n])).join(""); bindCards(el2);
+  set("l-oth",`Kapa-Kingi, Ferris or Leoni wins in ${fmtP(C.oth.p)} of simulations.`);
+  set("c-oth",condBoxes(C.oth,["One of them wins","None of them wins"]));
+  const el2=document.getElementById("s-oth"); el2.innerHTML=["Te Tai Tokerau","Te Tai Tonga","Tāmaki Makaurau"].map(n=>seatCard(SEAT_IDX[n])).join(""); bindCards(el2);
   const prec=(1.96*Math.sqrt(0.25/sim.N)*100).toFixed(1);
   document.getElementById("simNote").innerHTML= sim.off ? `Simulations are off, so every figure is a single result from "${esc(document.getElementById("scenario").selectedOptions[0].textContent)}" with no polling error. Called seats: ${Object.keys(state.locks).length}.` : `<button class="qbtn" data-info="sim" aria-label="How the simulation works">?</button> ${sim.N.toLocaleString()} runs of "${document.getElementById("scenario").selectedOptions[0].textContent}", with ${ERRNAME[String(state.err)]}. Each percentage is within about ±${prec} points of what more runs would give. Called seats: ${Object.keys(state.locks).length}.`;
 }
@@ -458,16 +458,16 @@ function ottPop(anchor){
   closePop(); popAnchor=anchor;
   const sim=state.sim, N=sim.N;
   const pk=(seat,nm)=>{ const i=SEAT_IDX[seat], j=ESEATS[i].c.findIndex(c=>c.nm===nm); return sim.seatWin[i][j]/N; };
-  const kk=pk("Te Tai Tokerau","Mariameno Kapa-Kingi"), fe=pk("Te Tai Tonga","Tākuta Ferris");
+  const kk=pk("Te Tai Tokerau","Mariameno Kapa-Kingi"), fe=pk("Te Tai Tonga","Tākuta Ferris"), kl=pk("Tāmaki Makaurau","Kerrin Leoni");
   let any=0; for(let s=0;s<N;s++) if(sim.othS[s]>0) any++;
   const imp=state.othImpact||{rel:0,c:{gt:0,gf:0,ot:0,of:0}};
   const inHouse=sim.medO>0;
   const repWon=nm=>{ const i=STAND["OTH|"+nm].i; return ESEATS[i].c[sim.rep.winners[i]].nm===nm; };
-  const kkIn=repWon("Mariameno Kapa-Kingi"), feIn=repWon("Tākuta Ferris");
+  const kkIn=repWon("Mariameno Kapa-Kingi"), feIn=repWon("Tākuta Ferris"), klIn=repWon("Kerrin Leoni");
   const badge=(won,seat)=>won?`<span class="elected">Elected: wins ${seat}</span>`:`<span class="notel">Not elected in this Parliament</span>`;
-  const electedNames=[kkIn?"Mariameno Kapa-Kingi is elected as the MP for Te Tai Tokerau":null, feIn?"Tākuta Ferris is elected as the MP for Te Tai Tonga":null].filter(Boolean);
+  const electedNames=[kkIn?"Mariameno Kapa-Kingi is elected as the MP for Te Tai Tokerau":null, feIn?"Tākuta Ferris is elected as the MP for Te Tai Tonga":null, klIn?"Kerrin Leoni is elected as the MP for Tāmaki Makaurau":null].filter(Boolean);
   const pop=document.createElement("div"); pop.className="pop"; pop.setAttribute("role","dialog"); pop.setAttribute("aria-label","About independent and other seats");
-  pop.innerHTML=`${electedNames.length?`<p class="electedbar">In the most likely Parliament, ${electedNames.join(", and ")}.</p>`:""}<p style="margin-bottom:10px"><b>Independent / other</b> is two MPs who were expelled from Te Pāti Māori (the Māori Party) and are now standing on their own.</p>
+  pop.innerHTML=`${electedNames.length?`<p class="electedbar">In the most likely Parliament, ${electedNames.join(", and ")}.</p>`:""}<p style="margin-bottom:10px"><b>Independent / other</b> is two MPs who were expelled from Te Pāti Māori (the Māori Party) and are now standing on their own, plus Kerrin Leoni, who resigned as Labour's candidate and is now an independent.</p>
     <div class="whos"><div class="who${kkIn?" won":""}">
       <p class="whoname">Mariameno Kapa-Kingi ${badge(kkIn,"Te Tai Tokerau")}</p>
       <dl>
@@ -485,8 +485,17 @@ function ottPop(anchor){
         <dt>Chance of winning</dt><dd><b>${fmtP(fe)}</b> of simulations. A late-September <a href="https://thespinoff.co.nz/politics/28-09-2026/takuta-ferris-is-coming-last-in-a-new-te-tai-tonga-poll" target="_blank" rel="noopener">Māori Television poll</a> had him fourth</dd>
         <dt>Would back</dt><dd>Leans Labour-led, but would work with the current coalition if it stays (<a href="https://thespinoff.co.nz/atea/01-10-2026/the-wildest-moments-from-a-hectic-te-tai-tonga-debate" target="_blank" rel="noopener">The Spinoff</a>)</dd>
       </dl>
+    </div>
+    <div class="who${klIn?" won":""}">
+      <p class="whoname">Kerrin Leoni ${badge(klIn,"Tāmaki Makaurau")}</p>
+      <dl>
+        <dt>Electorate</dt><dd>Tāmaki Makaurau <span>Māori seat covering Auckland</span></dd>
+        <dt>Party</dt><dd>Independent <span>resigned as Labour's candidate on 22 October (<a href="https://www.stuff.co.nz/politics/361049792/nz-election-2026-live-updates-politics-campaign-news" target="_blank" rel="noopener">Stuff</a>)</span></dd>
+        <dt>Chance of winning</dt><dd><b>${fmtP(kl)}</b> of simulations</dd>
+        <dt>Would back</dt><dd>Not stated since leaving Labour</dd>
+      </dl>
     </div></div>
-    <p><b>Why the chances vary:</b> each simulation redraws every party's vote and every electorate within the polls' margins of error. At least one of them wins in ${fmtP(any/N)} of runs${inHouse?", just over half, so the most likely Parliament includes one":", under half, so the most likely Parliament doesn't include them"}. Neither has picked a side, so they count as kingmakers.</p>
+    <p><b>Why the chances vary:</b> each simulation redraws every party's vote and every electorate within the polls' margins of error. At least one of them wins in ${fmtP(any/N)} of runs${inHouse?", just over half, so the most likely Parliament includes one":", under half, so the most likely Parliament doesn't include them"}. None of them has picked a side, so they count as kingmakers.</p>
     <div class="impact" style="margin:0 0 6px">How much it moves the odds <span><i style="width:${(imp.rel*100).toFixed(0)}%"></i></span></div>
     <p class="thr" style="margin:0 0 10px">National-led majority ${fmtP(imp.c.gt)} when one of them wins, ${fmtP(imp.c.gf)} when neither does.</p>
     <div class="popbtns"><button class="btn primary" data-go>Open the control</button><button class="btn" data-close>Close</button></div>`;

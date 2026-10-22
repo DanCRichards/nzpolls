@@ -80,7 +80,7 @@ The random seed is fixed, so identical inputs give identical results. That's del
 Above it, a short intro (date and countdown, title, one line). Keep it short so the seat diagram is on the first screen on a phone.
 
 1. **Most likely Parliament:** the changes banner (`#cfgBar`, only when something differs from the standard forecast), the poll and simulation controls, then the seat diagram with a majority outline, odds cards, the Share button, party bar with hover MP lists, and a collapsible detail table.
-2. **Simulation:** intro and reset, then cards for Opportunity (side, vote with direct and squeeze modes, impact), National's overhang (bars, list table under More info), polling error, Te Pāti Māori, breakaway MPs and late swing.
+2. **Simulation:** intro and reset, then cards for Opportunity (side, vote with direct and squeeze modes, impact), National's overhang (bars, list table under More info), polling error, Te Pāti Māori, breakaway candidates (Kapa-Kingi, Ferris and Leoni, all "Independent / other") and late swing.
 3. **Electorate seats:** a List / Map switch. The list shows cards with simulated chances, rating pills and calls. The map (general or Māori electorates) colours each seat by who's ahead, with the shade set by the same rating as the pills and stripes for toss-ups; selecting a seat shows its card. Map state lives in `MAPV` (`main.js`), and `paintMap()` runs after every simulation.
 4. **Party list outcome.**
 5. **More tools:** the all-party chart of what extra votes would do.

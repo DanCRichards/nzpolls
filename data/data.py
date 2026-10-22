@@ -4,7 +4,7 @@ def C(s):
     # "Party|Name|weight"
     parts=s.split("|"); pl=parts[0]; nm=parts[1]; w=int(parts[2]) if len(parts)>2 else 0
     code=P.get(pl,"MIN")
-    if nm=="Tākuta Ferris": code="OTH"
+    if nm in ("Tākuta Ferris","Kerrin Leoni"): code="OTH"  # independents who could win a seat
     return {"p":code,"pl":pl,"nm":nm,"w":w}
 S=[]
 def seat(n,held,note,cands,m=False):
@@ -75,7 +75,7 @@ seat("Whangārei","NAT","Sitting National MP not standing",["Money Free|Luke Beh
 seat("Wigram","LAB","Labour held narrowly in 2023; Megan Woods now list-only",["Free Palestine|William Donald Alexander","ACT|Laura McClure|5","Independent|Geoff McTague","Green|Shreejan Pandey|3","NZ First|Bryce Park","National|Tracy Summerfield|34","Labour|Dominik Yanzick|58"])
 seat("Hauraki-Waikato","TPM","Whakaata Māori-Curia poll (21 Sep–1 Oct): Maipi-Clarke 45, Kiriona 26, 17 unsure",["Independent|Neil Denby","Labour|Kingi Kiriona|22","Te Pāti Māori|Hana-Rawhiti Maipi-Clarke|78"],True)
 seat("Ikaroa-Rāwhiti","LAB","Whakaata Māori-Curia poll (28 Sep–8 Oct): Tangaere-Manuel 40, Maxwell 19, Te Au-Skipworth 15",["Te Pāti Māori|Haley Maxwell|15","Labour|Cushla Tangaere-Manuel|80","Green|Heather Te Au-Skipworth|5"],True)
-seat("Tāmaki Makaurau","TPM","Te Pāti Māori won the 2025 by-election by 3,519 votes. No Curia poll here; a MATA-Horizon poll across the Māori seats (25 Sep–9 Oct) had Labour's Leoni ahead, from a small sample",["Te Pāti Māori|Oriini Kaipara|63","Labour|Kerrin Leoni|35","Green|Florence Te Ohaere|2"],True)
+seat("Tāmaki Makaurau","TPM","Te Pāti Māori won the 2025 by-election by 3,519 votes. Kerrin Leoni resigned as Labour's candidate on 22 Oct after a video showed her at a Mongrel Mob event, and is now an independent, so Labour has no candidate here. A MATA-Horizon poll (25 Sep–9 Oct) had her ahead as Labour's candidate, from a small sample",["Te Pāti Māori|Oriini Kaipara|75","Independent|Kerrin Leoni|20","Green|Florence Te Ohaere|5"],True)
 seat("Te Tai Hauāuru","TPM","Whakaata Māori-Curia poll (14–24 Sep): Ngarewa-Packer 38, Kātene 27, Raukawa 10, 18 unsure",["Labour|Te Pūoho Kātene|23","Te Pāti Māori|Debbie Ngarewa-Packer|75","National|Coral Raukawa|2"],True)
 seat("Te Tai Tokerau","TPM","Sitting MP now leads the Te Tai Tokerau Party; a win for her adds an overhang seat. Whakaata Māori-Curia poll (5–15 Oct): Lyndon 24, Prime 18, Edwards 17, Kapa-Kingi 12, 22 unsure. An earlier MATA-Horizon poll (25 Sep–9 Oct) had Prime 27, Lyndon 23, Edwards 19, Kapa-Kingi 11",["Your PIC|Karl Barkley","Te Pāti Māori|Aperahama Edwards|16","Legalise Cannabis|Maki Herbert","Te Tai Tokerau|Mariameno Kapa-Kingi|8","Green|Hūhana Lyndon|48","Labour|Willow-Jean Prime|28"],True)
 seat("Te Tai Tonga","TPM","Sitting MP, expelled from Te Pāti Māori, is standing as an independent. Whakaata Māori-Curia poll (14–24 Sep): Ramsden 30, Murch 17, Te Morenga 16, Ferris 15",["Independent|Tākuta Ferris|13","NZ Loyal|Christine Fisher","Legalise Cannabis|Tania Henare","Te Pāti Māori|Lisa Marie Murch|20","Labour|Mananui Ramsden|55","Green|Lisa Te Morenga|12"],True)
@@ -93,7 +93,9 @@ L["NZF"]="Winston Peters;Shane Jones;Casey Costello;Mark Patterson;Alfred Ngaro;
 L["OPP"]="Qiulae Wong;Daniel Eb;Jessica Hammond;Kayla Kingdon-Bebb;Eden Skipper;Jodie Kuntzsch;Sarah Lucas;David Bainbridge-Zafar;Holly Knill;Pāpā Wharewera;Bianca Beebe;Romeo Tevaga;Benjamin Wylie-van Eerd;Rachel Ward;Naomi Pocock;Helen Tait;Cody Marsh;Adam MacRae-Martin;Mark Roach;Robert Mason;Luke Ross;Michael Carter;Derrick Paull;Matt Shepherd;Ben Lane;Chee-Khiang Sng;Finn Liley;Evan French;Jamie Attenborough;Matt Harris;Sacha Haskell;Netra Ghimire;Cail Smith;Sam Plummer;Blair Smith;Johan Chang;Almo Wong;Adrian Mee;Paul Jackson;Kevin Huang"
 L["TPM"]="Lance Norman"
 L={k:v.split(";") for k,v in L.items()}
-assert len(L["NAT"])==72 and len(L["LAB"])==71 and len(L["GRN"])==55 and len(L["ACT"])==46 and len(L["NZF"])==50 and len(L["OPP"])==40, {k:len(v) for k,v in L.items()}
+# no longer Labour candidates: any list place they'd have filled goes to the next person on the list
+for nm in ["Kerrin Leoni"]: L["LAB"].remove(nm)
+assert len(L["NAT"])==72 and len(L["LAB"])==70 and len(L["GRN"])==55 and len(L["ACT"])==46 and len(L["NZF"])==50 and len(L["OPP"])==40, {k:len(v) for k,v in L.items()}
 # check contender names exist on list or flagged
 for s in S:
     for c in s["c"]:
@@ -128,7 +130,7 @@ SRC={
  "Wigram":[r23(65)],
  "Hauraki-Waikato":[("Te Ao Māori News: Hauraki-Waikato poll","https://www.teaonews.co.nz/2026/10/06/maipi-clarke-leads-hauraki-waikato-as-party-vote-remains-neck-and-neck/")],
  "Ikaroa-Rāwhiti":[("Te Ao Māori News: Ikaroa-Rāwhiti poll","https://www.teaonews.co.nz/2026/10/13/labour-loyalty-runs-deep-in-ikaroa-rawhiti-new-poll-shows/")],
- "Tāmaki Makaurau":[("Electoral Commission: 2025 by-election result","https://elections.nz/media-and-news/2025/tamaki-makaurau-by-election-official-results/"),MATA],
+ "Tāmaki Makaurau":[("Electoral Commission: 2025 by-election result","https://elections.nz/media-and-news/2025/tamaki-makaurau-by-election-official-results/"),("Stuff: Kerrin Leoni resigns as Labour candidate","https://www.stuff.co.nz/politics/361049792/nz-election-2026-live-updates-politics-campaign-news"),("Te Ao Māori News: video of Leoni at Mongrel Mob event","https://www.teaonews.co.nz/2026/10/22/video-shows-labour-candidate-kerrin-leoni-at-mongrel-mob-event/"),MATA],
  "Te Tai Hauāuru":[("Te Ao Māori News: Te Tai Hauāuru poll","https://www.teaonews.co.nz/2026/09/30/debbie-ngarewa-packer-leads-te-tai-hauauru-poll/")],
  "Te Tai Tokerau":[("RNZ: Te Tai Tokerau poll","https://www.rnz.co.nz/news/politics_election-2026/2035974/huhana-lyndon-leads-te-tai-tokerau-poll-as-labour-tops-party-vote"),MATA],
  "Te Tai Tonga":[("Te Ao Māori News: Te Tai Tonga poll","https://www.teaonews.co.nz/2026/09/29/whakaata-maori-curia-poll-shows-takuta-ferris-trailing-in-te-tai-tonga/"),("NZ Herald: Te Tai Tonga poll","https://www.nzherald.co.nz/nz/politics/election-2026-new-poll-reveals-frontrunner-in-the-maori-seat-of-te-tai-tonga/7GVSRBESHZDKRPHO5VHNPJB3SM/")],
