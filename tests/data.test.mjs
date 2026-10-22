@@ -92,3 +92,9 @@ test("every electorate note that cites a poll or a 2023 margin links a source", 
     if (/poll|\bby \d|\d+ votes/i.test(s.note)) assert.ok(s.src.length > 0, `${s.n} cites "${s.note.slice(0, 50)}…" with no source`);
   }
 });
+
+test("independents count as 'Independent / other' and aren't on any party list", () => {
+  const ind = DATA.seats.flatMap((s) => s.c.filter((c) => c.p === "OTH" && c.pl === "Independent").map((c) => c.nm));
+  assert.ok(ind.includes("Tākuta Ferris") && ind.includes("Kerrin Leoni"));
+  for (const nm of ind) for (const [p, list] of Object.entries(DATA.lists)) assert.ok(!list.includes(nm), `${nm} is still on the ${p} list`);
+});
