@@ -686,6 +686,20 @@ details.diff a{color:var(--chamber)}
 .sharetext{resize:vertical}
 .shareurl input{color:var(--muted)}
 .sharebtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+
+/* latest-update note at the top (from data/updates.json): one line until opened */
+.updates{display:block;max-width:100%;margin:0 0 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:.82rem;color:var(--muted)}
+.updates summary{cursor:pointer;list-style:none;position:relative;padding:6px 26px 6px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.updates[open] summary{white-space:normal}
+.updates summary::-webkit-details-marker{display:none}
+.updates summary b{color:var(--ink)}
+.updates summary::after{content:"▾";position:absolute;right:10px;top:6px;font-size:.75rem}
+.updates[open] summary::after{content:"▴"}
+.updates time{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.updates ul{margin:0;padding:2px 12px 8px 28px;border-top:1px solid var(--line)}
+.updates li{margin:4px 0}
+.updot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--chamber);margin-right:6px;vertical-align:1px}
+@media (min-width:761px){.updates{display:inline-block}}
 </style>
 </head>
 <body>
@@ -703,6 +717,16 @@ details.diff a{color:var(--chamber)}
 <main>
   <noscript><p class="note">This forecast runs its simulations in your browser, so it needs JavaScript turned on.</p></noscript>
   <header class="intro">
+  <details class="updates" id="updates">
+    <summary><span class="updot" aria-hidden="true"></span><b>Latest update</b> <time datetime="2026-10-23T10:45+13:00" title="New Zealand time">23 Oct, 10:45am</time> Kerrin Leoni has resigned as Labour&#x27;s candidate in Tāmaki Makaurau and is now counted as an independent.</summary>
+    <ul>
+      <li><time datetime="2026-10-20T21:21+13:00" title="New Zealand time">20 Oct, 9:21pm</time> Near ties now say &quot;too close to call&quot;, and moving a party to another side no longer changes anyone&#x27;s seats.</li>
+      <li><time datetime="2026-10-20T20:50+13:00" title="New Zealand time">20 Oct, 8:50pm</time> You can now share your forecast, with your settings, from the Share button.</li>
+      <li><time datetime="2026-10-20T19:31+13:00" title="New Zealand time">20 Oct, 7:31pm</time> Every electorate poll is now linked on its seat card, and some poll figures were corrected.</li>
+      <li><time datetime="2026-10-20T18:11+13:00" title="New Zealand time">20 Oct, 6:11pm</time> Added the 1News–Verian poll (15–19 Oct). It&#x27;s now the default.</li>
+      <li><time datetime="2026-10-20T12:56+13:00" title="New Zealand time">20 Oct, 12:56pm</time> Te Tai Tokerau and Mount Albert updated from new electorate polls.</li>
+    </ul>
+  </details>
     <p class="eyebrow">NZ election 2026 · Saturday 7 November<span id="daysLeft"></span></p>
     <h1>Who gets the seats?</h1>
     <p class="lede">Change the poll, Opportunity's vote or any electorate, and watch Parliament change.</p>
@@ -2513,7 +2537,7 @@ function track(name,data){ try{ if(window.umami) window.umami.track(name,data); 
   document.addEventListener("change",e=>{ const t=e.target; if(CHANGE[t.id]){ const r=CHANGE[t.id](); track(r[0],r[1]); }
     else if(on("#votes",t)) track("Party vote edit",{party:NAMES[t.dataset.p]}); },true);
   document.addEventListener("toggle",e=>{ const d=e.target; if(!d.open) return;
-    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); else if(d.id==="diff") track("Open why numbers differ"); },true);
+    if(d.matches("details.more")) track("Open more tools"); else if(d.id==="tableDetails") track("Open party detail table"); else if(d.id==="faq") track("Open FAQ"); else if(d.id==="diff") track("Open why numbers differ"); else if(d.id==="updates") track("Open updates"); },true);
 })();
 
 </script>

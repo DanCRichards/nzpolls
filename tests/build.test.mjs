@@ -1,7 +1,7 @@
 // The built page: placeholders filled, structured data valid, static files present.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { read, exists, headConstants } from "./helpers.mjs";
+import { read, exists, json, headConstants } from "./helpers.mjs";
 
 const html = read("dist", "index.html");
 const H = headConstants();
@@ -30,4 +30,16 @@ test("icons, manifest, share image, robots.txt and sitemap.xml are deployed", ()
     assert.ok(exists("dist", f), `dist/${f} is missing`);
   assert.match(read("dist", "sitemap.xml"), /<loc>https:\/\/nzpolls\.co\.nz\/<\/loc>/);
   JSON.parse(read("dist", "site.webmanifest"));
+});
+
+test("the latest-update note shows the newest entry from data/updates.json, with a valid NZ date and time", () => {
+  const ups = json("data", "updates.json");
+  assert.ok(ups.length > 0);
+  for (const u of ups) {
+    assert.match(u.at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}\+1[23]:00$/, `${u.at} isn't an NZ time like 2026-10-23T10:45+13:00`);
+    assert.ok(!Number.isNaN(Date.parse(u.at)) && u.text.trim(), `bad update ${JSON.stringify(u)}`);
+  }
+  for (let i = 1; i < ups.length; i++) assert.ok(Date.parse(ups[i - 1].at) >= Date.parse(ups[i].at), `updates.json isn't newest first at "${ups[i].text}"`);
+  const summary = html.match(/<details class="updates" id="updates">\s*<summary>([\s\S]*?)<\/summary>/)[1];
+  assert.match(summary, new RegExp(`datetime="${ups[0].at.replace("+", "\\+")}"`));
 });

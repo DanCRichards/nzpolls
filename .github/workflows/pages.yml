@@ -1,12 +1,18 @@
 name: Deploy to GitHub Pages
 
-# The live site is always built from main. A push to a claude/** branch also deploys that
-# branch as a test copy at nzpolls.co.nz/preview/ (not indexed, no analytics); the next
-# push to main removes it.
+# Every push to main deploys the live site. To try a branch first, run this workflow by hand
+# (Actions → Deploy to GitHub Pages → Run workflow, on main) and name the branch: it's built
+# into nzpolls.co.nz/preview/ (not indexed, no analytics) next to the live site, until the
+# next deploy. It always runs on main, so the github-pages environment allows it.
 on:
   push:
-    branches: [main, "claude/**"]
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      preview:
+        description: "Branch to build into /preview/ (leave empty for none)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -15,7 +21,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false   # queue deploys; never cancel a live deploy part-way
 
 jobs:
   test:
@@ -36,11 +42,13 @@ jobs:
           python-version: "3.12"
       - name: Build the live site from main
         run: python3 build.py && mv dist site
-      - name: Build this branch as the preview
-        if: github.ref != 'refs/heads/main'
+      - name: Build the preview branch
+        if: inputs.preview != ''
+        env:
+          PREVIEW: ${{ inputs.preview }}
         run: |
-          git fetch --depth=1 origin "$GITHUB_SHA"
-          git worktree add preview-src "$GITHUB_SHA"
+          git fetch --depth=1 origin "refs/heads/$PREVIEW:refs/remotes/origin/preview-src"
+          git worktree add preview-src origin/preview-src
           (cd preview-src && python3 build.py --preview)
           mv preview-src/dist site/preview
           rm -f site/preview/robots.txt site/preview/sitemap.xml
